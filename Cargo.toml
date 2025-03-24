@@ -1,0 +1,7 @@
+[package]
+name = "wiot"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+cargo-tarpaulin = "0.32.3"
