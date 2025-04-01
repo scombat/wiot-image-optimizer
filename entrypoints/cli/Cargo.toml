@@ -1,0 +1,11 @@
+[package]
+name = "cli"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+wiot_core = { path = "../../core" }
+adapters = { path = "../../adapters" }
+anyhow = "1.0.97"
+clap = { version = "4.5.34", features = ["derive"] }
+tokio = "1.44.1"
