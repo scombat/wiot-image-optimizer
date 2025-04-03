@@ -33,11 +33,9 @@ impl ResizeOptions {
     }
 
     pub fn is_enabled(&self) -> bool {
-        self.width.is_some() || self.height.is_some()
-    }
-
-    pub fn effective_dpr(&self) -> f32 {
-        self.dpr.unwrap_or(1.0)
+        let is_size_modified = self.width.is_some() || self.height.is_some();
+        let is_dpr_modified = matches!(self.dpr, Some(val) if val != 1.0);
+        is_size_modified || is_dpr_modified
     }
 
     /*
@@ -77,46 +75,84 @@ mod tests {
     use super::*;
 
     #[test]
-    fn valid_resize_options_pass() {
-        let opts = vec![
-            ResizeOptions::new(Some(800), Some(600), Some(2.0)),
-            ResizeOptions::new(None, None, None),
-            ResizeOptions::new(Some(800), None, Some(2.0)),
-            ResizeOptions::new(None, Some(600), Some(2.0)),
-        ];
-        for opt in opts {
-            assert!(opt.is_ok());
+    fn test_default_dpr() {
+        let opts = ResizeOptions::default();
+        assert_eq!(opts.dpr, Some(1.0));
+    }
+
+    mod is_enabled {
+        use super::*;
+
+        #[test]
+        fn test_is_enabled() {
+            // Full
+            let opts = ResizeOptions::new(Some(800), Some(600), Some(2.0)).unwrap();
+            assert!(opts.is_enabled());
+
+            // None
+            let opts = ResizeOptions::new(None, None, None).unwrap();
+            assert!(!opts.is_enabled());
+
+            // Width only
+            let opts = ResizeOptions::new(Some(800), None, None).unwrap();
+            assert!(opts.is_enabled());
+
+            // Height only
+            let opts = ResizeOptions::new(None, Some(600), None).unwrap();
+            assert!(opts.is_enabled());
+
+            // DPR only != 1.0
+            let opts = ResizeOptions::new(None, None, Some(2.0)).unwrap();
+            assert!(opts.is_enabled());
         }
     }
 
-    #[test]
-    fn invalid_resize_sizes_options_fails() {
-        let opts = vec![
-            ResizeOptions::new(Some(0), Some(100), None),
-            ResizeOptions::new(Some(0), None, Some(2.0)),
-            ResizeOptions::new(None, Some(0), Some(2.0)),
-            ResizeOptions::new(Some(100), Some(0), None),
-        ];
-        for opt in opts {
-            assert!(opt.is_err());
+    mod validate {
+        use super::*;
+
+        #[test]
+        fn valid_resize_options_pass() {
+            let opts = vec![
+                ResizeOptions::new(Some(800), Some(600), Some(2.0)),
+                ResizeOptions::new(None, None, None),
+                ResizeOptions::new(Some(800), None, Some(2.0)),
+                ResizeOptions::new(None, Some(600), Some(2.0)),
+                ResizeOptions::new(None, None, Some(2.0)),
+            ];
+            for opt in opts {
+                assert!(opt.is_ok());
+            }
         }
-    }
 
-    #[test]
-    fn invalid_dpr_fails() {
-        let opts = vec![
-            ResizeOptions::new(Some(100), Some(100), Some(0.0)),
-            ResizeOptions::new(Some(100), Some(100), Some(11.0)),
-            ResizeOptions::new(Some(100), Some(100), Some(0.05)),
-            ResizeOptions::new(Some(100), Some(100), Some(42.0)),
-        ];
+        #[test]
+        fn invalid_resize_sizes_options_fails() {
+            let opts = vec![
+                ResizeOptions::new(Some(0), Some(100), None),
+                ResizeOptions::new(Some(0), None, Some(2.0)),
+                ResizeOptions::new(None, Some(0), Some(2.0)),
+                ResizeOptions::new(Some(100), Some(0), None),
+            ];
+            for opt in opts {
+                assert!(opt.is_err());
+            }
+        }
 
-        for opt in opts {
-            assert!(opt.is_err());
-            assert_eq!(
-                opt.unwrap_err().to_string(),
-                "Resize dpr must be between 0.1 and 10.0 (default is 1.0)"
-            );
+        #[test]
+        fn invalid_dpr_fails() {
+            let opts = vec![
+                ResizeOptions::new(Some(100), Some(100), Some(0.0)),
+                ResizeOptions::new(Some(100), Some(100), Some(11.0)),
+                ResizeOptions::new(Some(100), Some(100), Some(0.05)),
+                ResizeOptions::new(Some(100), Some(100), Some(42.0)),
+            ];
+
+            for opt in opts {
+                assert!(opt.is_err());
+                assert_eq!(
+                    opt.unwrap_err().to_string(),
+                    "Resize dpr must be between 0.1 and 10.0 (default is 1.0)"
+                );
+            }
         }
     }
 }
