@@ -14,8 +14,8 @@ impl ImagePipeline<'_> {
 
                 // Resize the image
                 *image = image.resize(
-                    (width as f32 * dpr) as u32,
-                    (height as f32 * dpr) as u32,
+                    (width as f32 * dpr).round() as u32,
+                    (height as f32 * dpr).round() as u32,
                     resize_options.filter,
                 );
             }
@@ -115,5 +115,25 @@ mod tests {
         assert!(pipeline.image.is_some());
         assert_eq!(pipeline.image.as_ref().unwrap().width(), 20);
         assert_eq!(pipeline.image.as_ref().unwrap().height(), 20);
+    }
+
+    #[tokio::test]
+    async fn test_pipeline_dpr_resize_round_applies() {
+        let mut pipeline = create_pipeline();
+        set_opts(&mut pipeline, 10, 10, 2.04);
+        verify_base_image_size(&mut pipeline).await;
+
+        // Resize the image & check the size (10x10 with 2.04 dpr should be round to down = 20x20)
+        pipeline.resize().unwrap();
+        assert!(pipeline.image.is_some());
+        assert_eq!(pipeline.image.as_ref().unwrap().width(), 20);
+        assert_eq!(pipeline.image.as_ref().unwrap().height(), 20);
+
+        // Resize the image & check the size (10x10 with 2.05 dpr should be round to up = 21x21)
+        set_opts(&mut pipeline, 10, 10, 2.05);
+        pipeline.resize().unwrap();
+        assert!(pipeline.image.is_some());
+        assert_eq!(pipeline.image.as_ref().unwrap().width(), 21);
+        assert_eq!(pipeline.image.as_ref().unwrap().height(), 21);
     }
 }
