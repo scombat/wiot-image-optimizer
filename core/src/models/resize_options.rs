@@ -14,7 +14,7 @@ impl Default for ResizeOptions {
         Self {
             width: None,
             height: None,
-            dpr: None,
+            dpr: Some(1.0),
             filter: FilterType::Triangle,
         }
     }
@@ -42,26 +42,32 @@ impl ResizeOptions {
 
     /*
      * Validate the resize options.
-     * - Width and height must be greater than 0 if specified.
-     * - DPR must be between 0.1 and 10.0 if specified.
-     * - If both width and height are specified, they must be greater than 0.
-     * - If only one of width or height is specified, the other must be None.
-     * - If both width and height are None, the resize options are considered valid.
+     *
+     * - If width is Some, it must be > 0
+     * - If height is Some, it must be > 0
+     * - width and height can both be None or both be > 0
+     * - DPR must be between 0.1 and 10.0 (default = 1.0)
      */
     pub fn validate(&self) -> Result<(), anyhow::Error> {
-        if self.width.is_some() && self.width.unwrap() == 0 {
-            return Err(anyhow!("Resize width must be greater than 0"));
-        }
-
-        if self.height.is_some() && self.height.unwrap() == 0 {
-            return Err(anyhow!("Resize height must be greater than 0"));
-        }
-
-        if let Some(dpr) = self.dpr {
-            if !(0.1..=10.0).contains(&dpr) {
-                return Err(anyhow!("Resize dpr must be between 0.1 and 10.0"));
+        if let Some(width) = self.width {
+            if width == 0 {
+                return Err(anyhow!("Resize width must be greater than 0"));
             }
         }
+
+        if let Some(height) = self.height {
+            if height == 0 {
+                return Err(anyhow!("Resize height must be greater than 0"));
+            }
+        }
+
+        let dpr = self.dpr.unwrap_or(1.0);
+        if !(0.1..=10.0).contains(&dpr) {
+            return Err(anyhow!(
+                "Resize dpr must be between 0.1 and 10.0 (default is 1.0)"
+            ));
+        }
+
         Ok(())
     }
 }
@@ -72,93 +78,45 @@ mod tests {
 
     #[test]
     fn valid_resize_options_pass() {
-        let opts = ResizeOptions {
-            width: Some(800),
-            height: Some(600),
-            dpr: Some(2.0),
-            ..Default::default()
-        };
-
-        assert!(opts.validate().is_ok());
+        let opts = vec![
+            ResizeOptions::new(Some(800), Some(600), Some(2.0)),
+            ResizeOptions::new(None, None, None),
+            ResizeOptions::new(Some(800), None, Some(2.0)),
+            ResizeOptions::new(None, Some(600), Some(2.0)),
+        ];
+        for opt in opts {
+            assert!(opt.is_ok());
+        }
     }
 
     #[test]
-    fn valid_partial_options_pass() {
-        let opts = ResizeOptions {
-            width: Some(500),
-            height: None,
-            dpr: None,
-            ..Default::default()
-        };
-
-        assert!(opts.validate().is_ok());
+    fn invalid_resize_sizes_options_fails() {
+        let opts = vec![
+            ResizeOptions::new(Some(0), Some(100), None),
+            ResizeOptions::new(Some(0), None, Some(2.0)),
+            ResizeOptions::new(None, Some(0), Some(2.0)),
+            ResizeOptions::new(Some(100), Some(0), None),
+        ];
+        for opt in opts {
+            assert!(opt.is_err());
+        }
     }
 
     #[test]
-    fn invalid_width_zero_fails() {
-        let opts = ResizeOptions {
-            width: Some(0),
-            height: Some(100),
-            dpr: None,
-            ..Default::default()
-        };
+    fn invalid_dpr_fails() {
+        let opts = vec![
+            ResizeOptions::new(Some(100), Some(100), Some(0.0)),
+            ResizeOptions::new(Some(100), Some(100), Some(11.0)),
+            ResizeOptions::new(Some(100), Some(100), Some(0.05)),
+            ResizeOptions::new(Some(100), Some(100), Some(42.0)),
+        ];
 
-        let result = opts.validate();
-        assert!(result.is_err());
-        assert_eq!(
-            result.unwrap_err().to_string(),
-            "Resize width must be greater than 0"
-        );
-    }
-
-    #[test]
-    fn invalid_height_zero_fails() {
-        let opts = ResizeOptions {
-            width: None,
-            height: Some(0),
-            dpr: None,
-            ..Default::default()
-        };
-
-        let result = opts.validate();
-        assert!(result.is_err());
-        assert_eq!(
-            result.unwrap_err().to_string(),
-            "Resize height must be greater than 0"
-        );
-    }
-
-    #[test]
-    fn invalid_dpr_low_fails() {
-        let opts = ResizeOptions {
-            width: Some(100),
-            height: Some(100),
-            dpr: Some(0.05),
-            ..Default::default()
-        };
-
-        let result = opts.validate();
-        assert!(result.is_err());
-        assert_eq!(
-            result.unwrap_err().to_string(),
-            "Resize dpr must be between 0.1 and 10.0"
-        );
-    }
-
-    #[test]
-    fn invalid_dpr_high_fails() {
-        let opts = ResizeOptions {
-            width: Some(100),
-            height: Some(100),
-            dpr: Some(42.0),
-            ..Default::default()
-        };
-
-        let result = opts.validate();
-        assert!(result.is_err());
-        assert_eq!(
-            result.unwrap_err().to_string(),
-            "Resize dpr must be between 0.1 and 10.0"
-        );
+        for opt in opts {
+            assert!(opt.is_err());
+            assert_eq!(
+                opt.unwrap_err().to_string(),
+                "Resize dpr must be between 0.1 and 10.0 (default is 1.0)"
+            );
+        }
     }
 }
