@@ -44,8 +44,8 @@ The CLI currently supports:
 |               | Save image                      | ✅ Done        |
 |               | Output Format detection         | ✅ Done        |
 |               | Automatic format selection      | 🧪 Planned     |
-|               | Resize (width & height)         | 🔧 In progress     |
-|               | Resize (DPI)                    | 🧪 Planned     |
+|               | Resize (width & height)         | ✅ Done     |
+|               | Resize (DPI)                    | ✅ Done     |
 |               | Resize Aspect Ratio Strategy    | 🧪 Planned     |
 |               | Resize Cover Strategy           | 🧪 Planned     |
 |               | Resize Contain Strategy         | 🧪 Planned     |
@@ -84,6 +84,8 @@ The CLI currently supports:
 |               | Golden image             | 💭 Idea |
 |               | AWS Lambda Zip           | 💭 Idea |
 |               | One-click cloud deploy   | 💭 Idea |
+|               | srcset / responsive variants    | 💭 Idea        |
+
 
 ## 🚀 Getting Started
 
