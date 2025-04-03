@@ -31,7 +31,7 @@ async fn main() -> Result<()> {
     let mut pipeline = ImagePipeline::new(source, destination, &args.input, &args.output);
 
     // Run the pipeline
-    pipeline.run().await;
+    pipeline.run().await?;
 
     Ok(())
 }

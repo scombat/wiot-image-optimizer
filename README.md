@@ -18,7 +18,7 @@ WIOT aims to become a universal toolkit to:
 - Process images in real-time or in batch
 - Support multiple entrypoints: CLI, HTTP, AWS Lambda, GCP, etc.
 - Handle multiple sources/destinations: local files, HTTP, S3, etc.
-- Be easily embeddable, composable, and cloud-native
+- Offer a clear, composable API for transformations via `ProcessingOptions`
 
 ---
 
@@ -26,9 +26,11 @@ WIOT aims to become a universal toolkit to:
 
 The CLI currently supports:
 
-- ✅ Basic pipeline execution: read → process (noop) → write
+- ✅ Basic pipeline execution: read → process → write
+- ✅ Image loaded into stateful pipeline
+- ✅ Modular processing steps (resize, encoding, etc.)
 - ✅ Automatic adapter resolution for local paths
-- ✅ Clean core-adapter architecture with extensibility in mind
+- 🧪 Early support for resize options (via ProcessingOptions)
 
 ---
 
@@ -42,7 +44,7 @@ The CLI currently supports:
 |               | Save image                      | ✅ Done        |
 |               | Output Format detection         | ✅ Done        |
 |               | Automatic format selection      | 🧪 Planned     |
-|               | Resize (width & height)         | 🧪 Planned     |
+|               | Resize (width & height)         | 🔧 In progress     |
 |               | Resize (DPI)                    | 🧪 Planned     |
 |               | Resize Aspect Ratio Strategy    | 🧪 Planned     |
 |               | Resize Cover Strategy           | 🧪 Planned     |
@@ -90,8 +92,9 @@ cargo run -p cli -- --input ./image.jpg --output ./output.jpg
 ```
 
 Supported input/output formats:
-- ✅ Local paths (`./image.jpg`, `file://...`)
-- 🔧 HTTP URLs, S3 paths — coming soon
+- ✅ Local file paths (`./image.jpg`, `file://...`)
+- 🔧 HTTP URLs (`https://...`)
+- 🔧 S3 paths (`s3://bucket/key.jpg`)
 
 ---
 
@@ -103,10 +106,54 @@ Supported input/output formats:
 
 ---
 
+## 🧱 Architecture
+
+```
+wiot-image-optimizer/
+├── core/                  # Business logic: image pipeline, processing options
+│   └── src/
+│       ├── lib.rs         # Entry point for the pipeline
+│       ├── models/        # Option models (resize, format, quality, etc.)
+│       └── services/      # Logic to apply those options (resize.rs, encode.rs, etc.)
+│
+├── adapters/              # FileSource & FileDestination implementations
+│   ├── local.rs           # Local filesystem adapter
+│   └── (http|s3|...)      # Future adapters
+│
+├── entrypoints/           # How users interact with WIOT
+│   └── cli/               # CLI entrypoint (args parsing, triggering pipeline)
+│   └── (http/aws/gcp/...)# Future interfaces
+│
+├── tests/                 # Integration and E2E tests
+│
+└── scripts/               # Dev tooling (Justfile, Dockerfile, etc.)
+```
+
+---
+
 ## 🤝 Contributing
 
 We’re building the foundation — your help is welcome!
 If you're interested in adapters, pipeline logic, format support, or CLI design, check out the issues and the [contribution guide](link-to-contribution-guidelines).
+
+---
+
+### 🛠 Project Setup
+
+After cloning the repository, run:
+
+```bash
+just install
+```
+
+This will:
+
+- Install required tools (`rustfmt`, `cargo-tarpaulin`, etc.)
+- Set up Git hooks to enforce formatting, linting, and testing before commit/push
+- Prepare your local dev environment
+
+> 💡 If you don’t have [`just`](https://github.com/casey/just) installed yet, do:
+> `cargo install just`
 
 ---
 
