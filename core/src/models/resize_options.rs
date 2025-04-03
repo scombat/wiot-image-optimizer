@@ -33,9 +33,9 @@ impl ResizeOptions {
     }
 
     pub fn is_enabled(&self) -> bool {
-        self.width.is_some()
-            || self.height.is_some()
-            || (self.dpr.is_some() && self.dpr != Some(1.0))
+        let is_size_modified = self.width.is_some() || self.height.is_some();
+        let is_dpr_modified = matches!(self.dpr, Some(val) if val != 1.0);
+        is_size_modified || is_dpr_modified
     }
 
     /*
