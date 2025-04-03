@@ -46,7 +46,7 @@ pre-push:
 pre-commit:
     #!/bin/bash
     echo "🔧 [pre-commit] Running format..."
-    just format
+    just format ""
 
     echo "🧹 [pre-commit] Running lint --fix..."
     just lint --fix --allow-dirty --allow-staged

@@ -5,14 +5,6 @@ pub struct ProcessingOptions {
     pub resize: Option<ResizeOptions>,
 }
 
-// impl Default for ProcessingOptions {
-//     fn default() -> Self {
-//         ProcessingOptions {
-//             resize: None,
-//         }
-//     }
-// }
-
 #[cfg(test)]
 mod tests {
     use super::*;
