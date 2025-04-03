@@ -1,15 +1,18 @@
+pub mod models;
 pub mod services;
 
-use std::sync::Arc;
-
 use image::DynamicImage;
+use models::options::ProcessingOptions;
 use services::{io::FileDestination, io::FileSource};
+use std::sync::Arc;
 
 pub struct ImagePipeline<'a> {
     source: Arc<dyn FileSource>,
     destination: Arc<dyn FileDestination>,
     input: &'a str,
     output: &'a str,
+    options: ProcessingOptions,
+    image: Option<DynamicImage>,
 }
 
 impl<'a> ImagePipeline<'a> {
@@ -24,33 +27,40 @@ impl<'a> ImagePipeline<'a> {
             destination,
             input,
             output,
+            options: ProcessingOptions::default(),
+            image: None,
         }
     }
 
-    pub async fn run(&mut self) {
-        let image = match self.source.read(self.input).await {
-            Ok(img) => img,
-            Err(e) => {
-                eprintln!("Error reading image: {}", e);
-                return;
-            }
-        };
-
-        let processed_image = match self.process_image(image) {
-            Ok(img) => img,
-            Err(e) => {
-                eprintln!("Error processing image: {}", e);
-                return;
-            }
-        };
-
-        if let Err(e) = self.destination.write(self.output, &processed_image).await {
-            eprintln!("Error writing image: {}", e);
+    pub async fn load(&mut self) -> Result<(), anyhow::Error> {
+        self.image = Some(self.source.read(self.input).await?);
+        if self.image.is_none() {
+            return Err(anyhow::anyhow!("[core/pipeline] Image cannot be loaded"));
         }
+        Ok(())
     }
 
-    fn process_image(&self, image: DynamicImage) -> Result<DynamicImage, String> {
-        // Placeholder for image processing logic
-        Ok(image)
+    pub async fn store(&mut self) -> Result<(), anyhow::Error> {
+        self.destination
+            .write(
+                self.output,
+                self.image
+                    .as_ref()
+                    .ok_or_else(|| anyhow::anyhow!("[core/pipeline] Image cannot be loaded"))?,
+            )
+            .await?;
+        Ok(())
+    }
+
+    pub async fn run(&mut self) -> Result<(), anyhow::Error> {
+        self.load().await?;
+        self.process_image()?;
+        self.store().await?;
+        Ok(())
+    }
+
+    fn process_image(&mut self) -> Result<(), anyhow::Error> {
+        self.resize()?;
+        Ok(())
     }
 }
