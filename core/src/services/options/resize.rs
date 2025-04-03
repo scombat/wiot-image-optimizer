@@ -10,7 +10,7 @@ impl ImagePipeline<'_> {
                     .ok_or_else(|| anyhow::anyhow!("[core/resize] Image cannot be loaded"))?;
                 let width = resize_options.width.unwrap_or(image.width());
                 let height = resize_options.height.unwrap_or(image.height());
-                let dpr = resize_options.effective_dpr();
+                let dpr = resize_options.dpr.unwrap();
 
                 // Resize the image
                 *image = image.resize(
@@ -73,12 +73,17 @@ mod tests {
         ImagePipeline::new(source, destination, "input", "output")
     }
 
-    fn set_opts(pipeline: &mut ImagePipeline, width: u32, height: u32, dpr: f32) {
+    fn set_opts(
+        pipeline: &mut ImagePipeline,
+        width: Option<u32>,
+        height: Option<u32>,
+        dpr: Option<f32>,
+    ) {
         pipeline.options = ProcessingOptions {
             resize: Some(ResizeOptions {
-                width: Some(width),
-                height: Some(height),
-                dpr: Some(dpr),
+                width,
+                height,
+                dpr,
                 ..Default::default()
             }),
         };
@@ -94,7 +99,7 @@ mod tests {
     #[tokio::test]
     async fn test_pipeline_resize_applies() {
         let mut pipeline = create_pipeline();
-        set_opts(&mut pipeline, 50, 50, 1.0);
+        set_opts(&mut pipeline, Some(50), Some(50), Some(1.0));
         verify_base_image_size(&mut pipeline).await;
 
         // Resize the image & check the size
@@ -107,7 +112,7 @@ mod tests {
     #[tokio::test]
     async fn test_pipeline_dpr_resize_applies() {
         let mut pipeline = create_pipeline();
-        set_opts(&mut pipeline, 10, 10, 2.0);
+        set_opts(&mut pipeline, Some(10), Some(10), Some(2.0));
         verify_base_image_size(&mut pipeline).await;
 
         // Resize the image & check the size (10x10 with 2.0 dpr = 20x20)
@@ -120,7 +125,7 @@ mod tests {
     #[tokio::test]
     async fn test_pipeline_dpr_resize_round_applies() {
         let mut pipeline = create_pipeline();
-        set_opts(&mut pipeline, 10, 10, 2.04);
+        set_opts(&mut pipeline, Some(10), Some(10), Some(2.04));
         verify_base_image_size(&mut pipeline).await;
 
         // Resize the image & check the size (10x10 with 2.04 dpr should be round to down = 20x20)
@@ -130,10 +135,23 @@ mod tests {
         assert_eq!(pipeline.image.as_ref().unwrap().height(), 20);
 
         // Resize the image & check the size (10x10 with 2.05 dpr should be round to up = 21x21)
-        set_opts(&mut pipeline, 10, 10, 2.05);
+        set_opts(&mut pipeline, Some(10), Some(10), Some(2.05));
         pipeline.resize().unwrap();
         assert!(pipeline.image.is_some());
         assert_eq!(pipeline.image.as_ref().unwrap().width(), 21);
         assert_eq!(pipeline.image.as_ref().unwrap().height(), 21);
+    }
+
+    #[tokio::test]
+    async fn test_pipeline_dpr_without_resize_options() {
+        let mut pipeline = create_pipeline();
+        set_opts(&mut pipeline, None, None, Some(2.0));
+        verify_base_image_size(&mut pipeline).await;
+
+        // Resize the image & check the size (100x100 with 2.0 dpr = 20x20)
+        pipeline.resize().unwrap();
+        assert!(pipeline.image.is_some());
+        assert_eq!(pipeline.image.as_ref().unwrap().width(), 200);
+        assert_eq!(pipeline.image.as_ref().unwrap().height(), 200);
     }
 }
