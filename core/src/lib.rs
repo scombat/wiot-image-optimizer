@@ -13,6 +13,7 @@ pub struct ImagePipeline<'a> {
     output: &'a str,
     options: ProcessingOptions,
     image: Option<DynamicImage>,
+    quality: Option<u8>,
 }
 
 impl<'a> ImagePipeline<'a> {
@@ -29,6 +30,7 @@ impl<'a> ImagePipeline<'a> {
             output,
             options: ProcessingOptions::default(),
             image: None,
+            quality: None,
         }
     }
 
@@ -61,6 +63,7 @@ impl<'a> ImagePipeline<'a> {
 
     fn process_image(&mut self) -> Result<(), anyhow::Error> {
         self.resize()?;
+        self.optimize_quality()?;
         Ok(())
     }
 }
