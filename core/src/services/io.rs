@@ -1,6 +1,6 @@
 use anyhow::Result;
 use async_trait::async_trait;
-use image::{DynamicImage, ImageFormat};
+use image::DynamicImage;
 use std::any::Any;
 use std::sync::Arc;
 
@@ -12,7 +12,7 @@ pub trait FileSource: Any + Send + Sync {
 
 #[async_trait]
 pub trait FileDestination: Any + Send + Sync {
-    async fn write(&self, path: &str, data: &[u8], format: ImageFormat) -> Result<()>;
+    async fn write(&self, path: &str, data: &[u8]) -> Result<()>;
     fn as_any(&self) -> &dyn Any;
 }
 

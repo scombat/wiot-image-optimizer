@@ -32,6 +32,7 @@ mod tests {
     use async_trait::async_trait;
     use image::{DynamicImage, Rgba};
     use std::sync::Arc;
+    use std::any::Any;
 
     /// Mock source that returns a 100x100 white image
     struct MockSource;
@@ -57,12 +58,10 @@ mod tests {
 
     #[async_trait]
     impl FileDestination for MockDestination {
-        async fn write(&self, _path: &str, _data: &[u8], _format: image::ImageFormat) -> Result<()> {
-            println!("Mock write to {}", _path);
+        async fn write(&self, _path: &str, _data: &[u8]) -> Result<()> {
             Ok(())
         }
-
-        fn as_any(&self) -> &dyn std::any::Any {
+        fn as_any(&self) -> &dyn Any {
             self
         }
     }

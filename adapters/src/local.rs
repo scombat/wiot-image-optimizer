@@ -28,7 +28,7 @@ impl FileSource for LocalFileAdapter {
 
 #[async_trait]
 impl FileDestination for LocalFileAdapter {
-    async fn write(&self, path: &str, data: &[u8], format: ImageFormat) -> Result<()> {
+    async fn write(&self, path: &str, data: &[u8]) -> Result<()> {
         let path = path.to_string();
         let data = data.to_vec();
         match spawn_blocking(move || fs::write(path, data)).await? {
@@ -136,6 +136,8 @@ mod tests {
                 Path::new(&valid_img).exists(),
                 "Missing test image at tests/assets/test.png"
             );
+            
+            // Read and verify image dimensions before test
             let result = adapter.read(&valid_img).await;
             assert!(result.is_ok(), "Failed to read image");
             let image = result.unwrap();
@@ -144,12 +146,28 @@ mod tests {
                 "Expected a valid image: not a DynamicImage or missmatch width"
             );
             
+            // Write to a temporary file instead of the test image
+            let temp_output = image_path("temp_test_output.png");
             let bytes = dummy_image_bytes();
             assert!(
-                adapter.write(&valid_img, &bytes, ImageFormat::Png).await.is_ok(),
+                adapter.write(&temp_output, &bytes).await.is_ok(),
                 "Failed to write image"
             );
-            assert!(Path::new(&valid_img).exists(), "Output file not created");
+            assert!(Path::new(&temp_output).exists(), "Output file not created");
+            
+            // Clean up the temporary file
+            if let Err(e) = std::fs::remove_file(&temp_output) {
+                eprintln!("Warning: Failed to clean up temporary file: {}", e);
+            }
+            
+            // Verify that the test image dimensions are unchanged
+            let result = adapter.read(&valid_img).await;
+            assert!(result.is_ok(), "Failed to read image after test");
+            let image = result.unwrap();
+            assert!(
+                image.width() == 512,
+                "Test image dimensions were modified during test"
+            );
         }
 
         #[tokio::test]
@@ -224,7 +242,7 @@ mod tests {
             let path = image_path("tmp_test_output.png");
             let bytes = dummy_image_bytes();
 
-            let result = adapter.write(&path, &bytes, ImageFormat::Png).await;
+            let result = adapter.write(&path, &bytes).await;
             assert!(
                 result.is_ok(),
                 "Expected successful write, got: {:?}",
@@ -241,7 +259,7 @@ mod tests {
             let bytes = dummy_image_bytes();
             let path = "/invalid_path/image.png";
 
-            let result = adapter.write(path, &bytes, ImageFormat::Png).await;
+            let result = adapter.write(path, &bytes).await;
             assert!(
                 result.is_err(),
                 "Expected error when writing to invalid path"

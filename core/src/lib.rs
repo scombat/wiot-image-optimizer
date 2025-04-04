@@ -32,6 +32,27 @@ impl<'a> ImagePipeline<'a> {
         }
     }
 
+    pub fn with_options(
+        source: Arc<dyn FileSource>,
+        destination: Arc<dyn FileDestination>,
+        input: &'a str,
+        output: &'a str,
+        options: ProcessingOptions,
+    ) -> Self {
+        ImagePipeline {
+            source,
+            destination,
+            input,
+            output,
+            options,
+            image: None,
+        }
+    }
+
+    pub fn set_options(&mut self, options: ProcessingOptions) {
+        self.options = options;
+    }
+
     pub async fn load(&mut self) -> Result<(), anyhow::Error> {
         self.image = Some(self.source.read(self.input).await?);
         if self.image.is_none() {
@@ -45,15 +66,11 @@ impl<'a> ImagePipeline<'a> {
             .as_ref()
             .ok_or_else(|| anyhow::anyhow!("[core/pipeline] Image cannot be loaded"))?;
 
-        // Determine output format from options or file extension
-        let format = self.options.quality.as_ref()
-            .and_then(|q| q.format.as_deref())
-            .unwrap_or_else(|| {
-                // Extract format from output path extension
-                self.output.split('.')
-                    .last()
-                    .unwrap_or("jpeg")
-            });
+        // Get format from output file extension
+        let format = self.output
+            .split('.')
+            .last()
+            .unwrap_or("jpeg");
 
         // Get encoder for the format
         let encoder = get_encoder(format)
@@ -63,7 +80,7 @@ impl<'a> ImagePipeline<'a> {
         let encoded = encoder.encode(image, &self.options)?;
 
         // Write the encoded bytes
-        self.destination.write(self.output, &encoded, encoder.format()).await?;
+        self.destination.write(self.output, &encoded).await?;
         Ok(())
     }
 

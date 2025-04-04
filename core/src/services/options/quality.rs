@@ -2,48 +2,6 @@ use crate::ImagePipeline;
 use crate::services::encoder::get_encoder;
 
 use anyhow::Result;
-use image::{DynamicImage, codecs::jpeg::JpegEncoder};
-use std::time::Instant;
-
-
-pub trait QualityEncoder {
-    fn encode(&self, image: DynamicImage, quality: u8, input_size: usize) -> Result<(DynamicImage, bool, Option<Vec<u8>>)>;
-}
-
-pub struct WebPQualityEncoder;
-pub struct JpegQualityEncoder;
-
-impl QualityEncoder for WebPQualityEncoder {
-    fn encode(&self, image: DynamicImage, quality: u8, _input_size: usize) -> Result<(DynamicImage, bool, Option<Vec<u8>>)> {
-        let rgba = image.to_rgba8();
-        let encoder = webp::Encoder::from_rgba(&rgba, rgba.width(), rgba.height());
-        let output = encoder.encode(quality as f32);
-        let raw_bytes = output.to_vec();
-        let processed_image = image::load_from_memory(&raw_bytes)
-            .map_err(|e| anyhow::anyhow!("Failed to load processed WebP image: {}", e))?;
-        Ok((processed_image, false, Some(raw_bytes)))
-    }
-}
-
-impl QualityEncoder for JpegQualityEncoder {
-    fn encode(&self, image: DynamicImage, quality: u8, _input_size: usize) -> Result<(DynamicImage, bool, Option<Vec<u8>>)> {
-        let mut output = Vec::new();
-        let mut encoder = JpegEncoder::new_with_quality(&mut output, quality);
-        encoder.encode_image(&image)
-            .map_err(|e| anyhow::anyhow!("Failed to encode JPEG image: {}", e))?;
-        let processed_image = image::load_from_memory(&output)
-            .map_err(|e| anyhow::anyhow!("Failed to load processed JPEG image: {}", e))?;
-        Ok((processed_image, false, Some(output)))
-    }
-}
-
-pub fn get_encoder_for_format(format: &str) -> Option<Box<dyn QualityEncoder>> {
-    match format.to_lowercase().as_str() {
-        "webp" => Some(Box::new(WebPQualityEncoder)),
-        "jpeg" | "jpg" => Some(Box::new(JpegQualityEncoder)),
-        _ => None,
-    }
-}
 
 impl ImagePipeline<'_> {
     pub fn optimize_quality(&mut self) -> Result<(), anyhow::Error> {
@@ -54,18 +12,24 @@ impl ImagePipeline<'_> {
                     .as_mut()
                     .ok_or_else(|| anyhow::anyhow!("[core/quality] Image cannot be loaded"))?;
 
-                let format = quality_options.format.as_deref().unwrap_or("jpeg");
+                // Get format from output file extension
+                let format = self.output
+                    .split('.')
+                    .last()
+                    .unwrap_or("jpeg");
+
+                println!("format: {}", format);
                 
                 // Get encoder for the format
                 let encoder = get_encoder(format)
                     .ok_or_else(|| anyhow::anyhow!("[core/quality] Unsupported format: {}", format))?;
 
-                // Encode the image
+                // Encode the image with quality settings
                 let encoded = encoder.encode(image, &self.options)?;
-
+                
                 // Load the encoded image back
                 *image = image::load_from_memory(&encoded)
-                    .map_err(|e| anyhow::anyhow!("Failed to load encoded image: {}", e))?;
+                    .map_err(|e| anyhow::anyhow!("[core/quality] Failed to load processed image: {}", e))?;
             }
         }
         Ok(())
@@ -75,98 +39,76 @@ impl ImagePipeline<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use image::DynamicImage;
+    use crate::models::options::{ProcessingOptions, QualityOptions};
+    use crate::services::io::{FileDestination, FileSource};
+    use anyhow::Result;
+    use async_trait::async_trait;
+    use image::{DynamicImage, ImageFormat};
+    use std::sync::Arc;
+    use std::any::Any;
 
-    fn create_test_image() -> DynamicImage {
-        DynamicImage::new_rgb8(100, 100)
+    struct MockSource;
+
+    #[async_trait]
+    impl FileSource for MockSource {
+        async fn read(&self, _path: &str) -> Result<DynamicImage> {
+            Ok(DynamicImage::new_rgb8(100, 100))
+        }
+        fn as_any(&self) -> &dyn std::any::Any {
+            self
+        }
     }
 
-    #[test]
-    fn test_encoder_resolution() {
-        // Test supported formats
-        assert!(get_encoder_for_format("webp").is_some());
-        assert!(get_encoder_for_format("jpeg").is_some());
-        assert!(get_encoder_for_format("jpg").is_some());
+    struct MockDestination;
 
-        // Test unsupported formats
-        assert!(get_encoder_for_format("png").is_none());
-        assert!(get_encoder_for_format("gif").is_none());
-        assert!(get_encoder_for_format("bmp").is_none());
-        assert!(get_encoder_for_format("").is_none());
+    #[async_trait]
+    impl FileDestination for MockDestination {
+        async fn write(&self, _path: &str, _data: &[u8]) -> Result<()> {
+            Ok(())
+        }
+        fn as_any(&self) -> &dyn Any {
+            self
+        }
     }
 
-    #[test]
-    fn test_webp_encoder() {
-        let encoder = WebPQualityEncoder;
-        let image = create_test_image();
-        let input_size = 1000; // Dummy size for testing
-        let result = encoder.encode(image, 80, input_size);
-        
-        assert!(result.is_ok());
-        let (processed_image, keep_original, raw_bytes) = result.unwrap();
-        assert!(!keep_original);
-        assert!(raw_bytes.is_some());
-        assert_eq!(processed_image.width(), 100);
-        assert_eq!(processed_image.height(), 100);
+    fn create_pipeline<'a>(output: &'a str) -> ImagePipeline<'a> {
+        let source = Arc::new(MockSource);
+        let destination = Arc::new(MockDestination);
+        ImagePipeline::new(source, destination, "input", output)
     }
 
-    #[test]
-    fn test_jpeg_encoder() {
-        let encoder = JpegQualityEncoder;
-        let image = create_test_image();
-        let input_size = 1000; // Dummy size for testing
-        let result = encoder.encode(image, 80, input_size);
-        
-        assert!(result.is_ok());
-        let (processed_image, keep_original, raw_bytes) = result.unwrap();
-        assert!(!keep_original);
-        assert!(raw_bytes.is_some());
-        assert_eq!(processed_image.width(), 100);
-        assert_eq!(processed_image.height(), 100);
+    fn set_quality_opts(pipeline: &mut ImagePipeline, quality: Option<u8>) {
+        pipeline.options = ProcessingOptions {
+            quality: Some(QualityOptions::new(quality).unwrap()),
+            ..Default::default()
+        };
     }
 
-    #[test]
-    fn test_encoder_quality_effects() {
-        let image = create_test_image();
-        let input_size = 1000; // Dummy size for testing
-        
-        // Test WebP encoder with different quality settings
-        let webp_encoder = WebPQualityEncoder;
-        let result_high = webp_encoder.encode(image.clone(), 90, input_size);
-        let result_low = webp_encoder.encode(image.clone(), 10, input_size);
-        
-        assert!(result_high.is_ok());
-        assert!(result_low.is_ok());
-        
-        let (_, _, bytes_high) = result_high.unwrap();
-        let (_, _, bytes_low) = result_low.unwrap();
-        
-        let bytes_high = bytes_high.unwrap();
-        let bytes_low = bytes_low.unwrap();
-        
-        // Both should be smaller than input
-        assert!(bytes_high.len() < input_size);
-        assert!(bytes_low.len() < input_size);
+    #[tokio::test]
+    async fn test_quality_optimization() {
+        // Test JPEG quality optimization
+        let mut pipeline = create_pipeline("output.jpeg");
+        pipeline.load().await.unwrap();
+        set_quality_opts(&mut pipeline, Some(50));
+        assert!(pipeline.optimize_quality().is_ok());
 
-        // Test JPEG encoder with different quality settings
-        let jpeg_encoder = JpegQualityEncoder;
-        let result_high = jpeg_encoder.encode(image.clone(), 90, input_size);
-        let result_low = jpeg_encoder.encode(image.clone(), 10, input_size);
-        
-        assert!(result_high.is_ok());
-        assert!(result_low.is_ok());
-        
-        let (_, _, bytes_high) = result_high.unwrap();
-        let (_, _, bytes_low) = result_low.unwrap();
-        
-        let bytes_high = bytes_high.unwrap();
-        let bytes_low = bytes_low.unwrap();
-        
-        // Both should be smaller than input
-        assert!(bytes_high.len() < input_size);
-        assert!(bytes_low.len() < input_size);
-        
-        // Lower quality should result in smaller file size for JPEG
-        assert!(bytes_low.len() < bytes_high.len());
+        // Test WebP quality optimization
+        let mut pipeline = create_pipeline("output.webp");
+        pipeline.load().await.unwrap();
+        set_quality_opts(&mut pipeline, Some(75));
+        assert!(pipeline.optimize_quality().is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_quality_optimization_invalid_format() {
+        let mut pipeline = create_pipeline("output.png");
+        pipeline.image = Some(DynamicImage::new_rgb8(100, 100));
+        set_quality_opts(&mut pipeline, Some(80));
+
+        let result = pipeline.optimize_quality();
+        assert!(result.is_err());
+        let err = result.unwrap_err().to_string();
+        assert!(err.contains("Unsupported format"), 
+               "Expected error about unsupported format, got: {}", err);
     }
 } 
