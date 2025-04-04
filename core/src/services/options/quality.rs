@@ -1,4 +1,5 @@
 use crate::ImagePipeline;
+use crate::services::encoder::get_encoder;
 
 use anyhow::Result;
 use image::{DynamicImage, codecs::jpeg::JpegEncoder};
@@ -53,18 +54,18 @@ impl ImagePipeline<'_> {
                     .as_mut()
                     .ok_or_else(|| anyhow::anyhow!("[core/quality] Image cannot be loaded"))?;
 
-                let quality = quality_options.quality.unwrap_or(80);
                 let format = quality_options.format.as_deref().unwrap_or("jpeg");
-                let input_size = image.as_bytes().len();
-
-                let encoder = get_encoder_for_format(format)
+                
+                // Get encoder for the format
+                let encoder = get_encoder(format)
                     .ok_or_else(|| anyhow::anyhow!("[core/quality] Unsupported format: {}", format))?;
 
-                let (processed_image, keep_original, _) = encoder.encode(image.clone(), quality, input_size)?;
-                
-                if !keep_original {
-                    *image = processed_image;
-                }
+                // Encode the image
+                let encoded = encoder.encode(image, &self.options)?;
+
+                // Load the encoded image back
+                *image = image::load_from_memory(&encoded)
+                    .map_err(|e| anyhow::anyhow!("Failed to load encoded image: {}", e))?;
             }
         }
         Ok(())

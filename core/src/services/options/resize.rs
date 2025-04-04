@@ -57,7 +57,7 @@ mod tests {
 
     #[async_trait]
     impl FileDestination for MockDestination {
-        async fn write(&self, _path: &str, _image: &DynamicImage) -> Result<()> {
+        async fn write(&self, _path: &str, _data: &[u8], _format: image::ImageFormat) -> Result<()> {
             println!("Mock write to {}", _path);
             Ok(())
         }
@@ -86,6 +86,7 @@ mod tests {
                 dpr,
                 ..Default::default()
             }),
+            quality: None,
         };
     }
 

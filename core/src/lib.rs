@@ -3,7 +3,7 @@ pub mod services;
 
 use image::DynamicImage;
 use models::options::ProcessingOptions;
-use services::{io::FileDestination, io::FileSource};
+use services::{io::FileDestination, io::FileSource, encoder::{get_encoder, ImageEncoder}};
 use std::sync::Arc;
 
 pub struct ImagePipeline<'a> {
@@ -13,7 +13,6 @@ pub struct ImagePipeline<'a> {
     output: &'a str,
     options: ProcessingOptions,
     image: Option<DynamicImage>,
-    quality: Option<u8>,
 }
 
 impl<'a> ImagePipeline<'a> {
@@ -30,7 +29,6 @@ impl<'a> ImagePipeline<'a> {
             output,
             options: ProcessingOptions::default(),
             image: None,
-            quality: None,
         }
     }
 
@@ -43,14 +41,29 @@ impl<'a> ImagePipeline<'a> {
     }
 
     pub async fn store(&mut self) -> Result<(), anyhow::Error> {
-        self.destination
-            .write(
-                self.output,
-                self.image
-                    .as_ref()
-                    .ok_or_else(|| anyhow::anyhow!("[core/pipeline] Image cannot be loaded"))?,
-            )
-            .await?;
+        let image = self.image
+            .as_ref()
+            .ok_or_else(|| anyhow::anyhow!("[core/pipeline] Image cannot be loaded"))?;
+
+        // Determine output format from options or file extension
+        let format = self.options.quality.as_ref()
+            .and_then(|q| q.format.as_deref())
+            .unwrap_or_else(|| {
+                // Extract format from output path extension
+                self.output.split('.')
+                    .last()
+                    .unwrap_or("jpeg")
+            });
+
+        // Get encoder for the format
+        let encoder = get_encoder(format)
+            .ok_or_else(|| anyhow::anyhow!("[core/pipeline] Unsupported output format: {}", format))?;
+
+        // Encode the image
+        let encoded = encoder.encode(image, &self.options)?;
+
+        // Write the encoded bytes
+        self.destination.write(self.output, &encoded, encoder.format()).await?;
         Ok(())
     }
 
