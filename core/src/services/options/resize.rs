@@ -31,6 +31,7 @@ mod tests {
     use anyhow::Result;
     use async_trait::async_trait;
     use image::{DynamicImage, Rgba};
+    use std::any::Any;
     use std::sync::Arc;
 
     /// Mock source that returns a 100x100 white image
@@ -57,12 +58,10 @@ mod tests {
 
     #[async_trait]
     impl FileDestination for MockDestination {
-        async fn write(&self, _path: &str, _image: &DynamicImage) -> Result<()> {
-            println!("Mock write to {}", _path);
+        async fn write(&self, _path: &str, _data: &[u8]) -> Result<()> {
             Ok(())
         }
-
-        fn as_any(&self) -> &dyn std::any::Any {
+        fn as_any(&self) -> &dyn Any {
             self
         }
     }
@@ -86,6 +85,7 @@ mod tests {
                 dpr,
                 ..Default::default()
             }),
+            quality: None,
         };
     }
 

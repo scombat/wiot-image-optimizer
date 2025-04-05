@@ -1,6 +1,7 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use image::{DynamicImage, open};
+use std::fs;
 use std::sync::Arc;
 use tokio::task::spawn_blocking;
 use wiot_core::services::io::{FileAdapterFactory, FileDestination, FileSource};
@@ -27,10 +28,10 @@ impl FileSource for LocalFileAdapter {
 
 #[async_trait]
 impl FileDestination for LocalFileAdapter {
-    async fn write(&self, path: &str, image: &DynamicImage) -> Result<()> {
+    async fn write(&self, path: &str, data: &[u8]) -> Result<()> {
         let path = path.to_string();
-        let img: DynamicImage = image.clone();
-        match spawn_blocking(move || img.save(path)).await? {
+        let data = data.to_vec();
+        match spawn_blocking(move || fs::write(path, data)).await? {
             Ok(_) => Ok(()),
             Err(e) => Err(anyhow::anyhow!(
                 "[LocalFileDestination] Failed to write image: {}",
@@ -45,27 +46,30 @@ impl FileDestination for LocalFileAdapter {
 
 impl FileAdapterFactory for LocalFileAdapter {
     fn can_handler(&self, uri: &str) -> bool {
-        match uri.split_once("://") {
-            Some((scheme, _)) => scheme == "file" || scheme.is_empty(),
-            None => true,
-        }
+        // Accept any path that doesn't have a scheme or has file:// scheme
+        !uri.contains("://") || uri.starts_with("file://")
     }
 
     fn create_source(&self, uri: &str) -> Result<Arc<dyn FileSource>> {
-        if self.can_handler(uri) {
-            Ok(Arc::new(LocalFileAdapter))
-        } else {
-            Err(anyhow::anyhow!("Unsupported URI scheme"))
+        if !self.can_handler(uri) {
+            return Err(anyhow::anyhow!(
+                "[LocalFileAdapter] Cannot handle URI scheme: {}",
+                uri
+            ));
         }
+        Ok(Arc::new(self.clone()))
     }
 
     fn create_destination(&self, uri: &str) -> Result<Arc<dyn FileDestination>> {
-        if self.can_handler(uri) {
-            Ok(Arc::new(LocalFileAdapter))
-        } else {
-            Err(anyhow::anyhow!("Unsupported URI scheme"))
+        if !self.can_handler(uri) {
+            return Err(anyhow::anyhow!(
+                "[LocalFileAdapter] Cannot handle URI scheme: {}",
+                uri
+            ));
         }
+        Ok(Arc::new(self.clone()))
     }
+
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
@@ -74,6 +78,7 @@ impl FileAdapterFactory for LocalFileAdapter {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use image::ImageFormat;
     use std::path::Path;
 
     fn image_path(name: &str) -> String {
@@ -84,8 +89,17 @@ mod tests {
             .expect("Failed to convert PathBuf to str")
             .to_string()
     }
+
     fn dummy_image() -> DynamicImage {
         image::DynamicImage::new_rgb8(10, 10)
+    }
+
+    fn dummy_image_bytes() -> Vec<u8> {
+        let image = dummy_image();
+        let mut bytes = Vec::new();
+        let mut cursor = std::io::Cursor::new(&mut bytes);
+        image.write_to(&mut cursor, ImageFormat::Png).unwrap();
+        bytes
     }
 
     mod factory {
@@ -122,6 +136,8 @@ mod tests {
                 Path::new(&valid_img).exists(),
                 "Missing test image at tests/assets/test.png"
             );
+
+            // Read and verify image dimensions before test
             let result = adapter.read(&valid_img).await;
             assert!(result.is_ok(), "Failed to read image");
             let image = result.unwrap();
@@ -129,11 +145,29 @@ mod tests {
                 image.width() == 512,
                 "Expected a valid image: not a DynamicImage or missmatch width"
             );
+
+            // Write to a temporary file instead of the test image
+            let temp_output = image_path("temp_test_output.png");
+            let bytes = dummy_image_bytes();
             assert!(
-                adapter.write(&valid_img, &image).await.is_ok(),
+                adapter.write(&temp_output, &bytes).await.is_ok(),
                 "Failed to write image"
             );
-            assert!(Path::new(&valid_img).exists(), "Output file not created");
+            assert!(Path::new(&temp_output).exists(), "Output file not created");
+
+            // Clean up the temporary file
+            if let Err(e) = std::fs::remove_file(&temp_output) {
+                eprintln!("Warning: Failed to clean up temporary file: {}", e);
+            }
+
+            // Verify that the test image dimensions are unchanged
+            let result = adapter.read(&valid_img).await;
+            assert!(result.is_ok(), "Failed to read image after test");
+            let image = result.unwrap();
+            assert!(
+                image.width() == 512,
+                "Test image dimensions were modified during test"
+            );
         }
 
         #[tokio::test]
@@ -206,9 +240,9 @@ mod tests {
         async fn test_write_image() {
             let adapter = LocalFileAdapter;
             let path = image_path("tmp_test_output.png");
+            let bytes = dummy_image_bytes();
 
-            let image = dummy_image();
-            let result = adapter.write(&path, &image).await;
+            let result = adapter.write(&path, &bytes).await;
             assert!(
                 result.is_ok(),
                 "Expected successful write, got: {:?}",
@@ -222,10 +256,10 @@ mod tests {
         #[tokio::test]
         async fn test_write_failure_on_invalid_path() {
             let adapter = LocalFileAdapter;
-            let image = dummy_image();
+            let bytes = dummy_image_bytes();
             let path = "/invalid_path/image.png";
 
-            let result = adapter.write(path, &image).await;
+            let result = adapter.write(path, &bytes).await;
             assert!(
                 result.is_err(),
                 "Expected error when writing to invalid path"

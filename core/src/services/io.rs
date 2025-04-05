@@ -12,7 +12,7 @@ pub trait FileSource: Any + Send + Sync {
 
 #[async_trait]
 pub trait FileDestination: Any + Send + Sync {
-    async fn write(&self, path: &str, image: &DynamicImage) -> Result<()>;
+    async fn write(&self, path: &str, data: &[u8]) -> Result<()>;
     fn as_any(&self) -> &dyn Any;
 }
 

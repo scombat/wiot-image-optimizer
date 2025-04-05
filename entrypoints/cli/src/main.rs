@@ -1,7 +1,8 @@
 use adapters::resolver::AdapterResolver;
 use anyhow::Result;
 use clap::Parser;
-use wiot_core::ImagePipeline;
+use wiot_core::models::quality_options::QualityOptions;
+use wiot_core::{ImagePipeline, models::options::ProcessingOptions};
 
 #[derive(Parser, Debug)]
 #[command(name = "wiot-cli")]
@@ -14,6 +15,10 @@ struct CliArgs {
     /// Output image path
     #[arg(short, long)]
     output: String,
+
+    /// Image quality (1-100, default: 80)
+    #[arg(short, long)]
+    quality: Option<u8>,
 }
 
 #[tokio::main]
@@ -21,14 +26,25 @@ async fn main() -> Result<()> {
     let args = CliArgs::parse();
 
     // Use automatic adapter resolution
-    // This will resolve the source and destination based on the input and output paths
-    // For example, if the input is "file:///path/to/image.jpg", it will use the LocalFileAdapter
-    // This can be bypass and overridden by the user if they want to use a specific adapter
     let source = AdapterResolver::resolve_source(&args.input)?;
     let destination = AdapterResolver::resolve_destination(&args.output)?;
 
-    // Create a new ImagePipeline instance
-    let mut pipeline = ImagePipeline::new(source, destination, &args.input, &args.output);
+    // Create quality options if specified
+    let quality_options = if args.quality.is_some() {
+        Some(QualityOptions::new(args.quality)?)
+    } else {
+        None
+    };
+
+    // Create processing options
+    let options = ProcessingOptions {
+        quality: quality_options,
+        ..Default::default()
+    };
+
+    // Create a new ImagePipeline instance with options
+    let mut pipeline =
+        ImagePipeline::with_options(source, destination, &args.input, &args.output, options);
 
     // Run the pipeline
     pipeline.run().await?;

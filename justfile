@@ -9,7 +9,7 @@ install:
     cargo install cargo-tarpaulin
 
 lint *OPTS="-- -D warnings":
-    cargo clippy {{OPTS}}
+    cargo clippy --workspace --all-targets --all-features {{OPTS}}
 
 check:
     cargo check
