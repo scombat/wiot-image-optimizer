@@ -52,3 +52,9 @@ pre-commit:
     just lint --fix --allow-dirty --allow-staged
 
     echo "✅ [pre-commit] Done."
+
+# Usage: just review-pr github_user branch_name
+review-pr username branch:
+    git remote add {{username}} https://github.com/{{username}}/wiot-image-optimizer.git || true
+    git fetch {{username}} {{branch}}
+    git checkout -b review/{{username}}-{{branch}} {{username}}/{{branch}}
