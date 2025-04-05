@@ -13,23 +13,22 @@ impl ImagePipeline<'_> {
                     .ok_or_else(|| anyhow::anyhow!("[core/quality] Image cannot be loaded"))?;
 
                 // Get format from output file extension
-                let format = self.output
-                    .split('.')
-                    .last()
-                    .unwrap_or("jpeg");
+                let format = self.output.split('.').next_back().unwrap_or("jpeg");
 
                 println!("format: {}", format);
-                
+
                 // Get encoder for the format
-                let encoder = get_encoder(format)
-                    .ok_or_else(|| anyhow::anyhow!("[core/quality] Unsupported format: {}", format))?;
+                let encoder = get_encoder(format).ok_or_else(|| {
+                    anyhow::anyhow!("[core/quality] Unsupported format: {}", format)
+                })?;
 
                 // Encode the image with quality settings
                 let encoded = encoder.encode(image, &self.options)?;
-                
+
                 // Load the encoded image back
-                *image = image::load_from_memory(&encoded)
-                    .map_err(|e| anyhow::anyhow!("[core/quality] Failed to load processed image: {}", e))?;
+                *image = image::load_from_memory(&encoded).map_err(|e| {
+                    anyhow::anyhow!("[core/quality] Failed to load processed image: {}", e)
+                })?;
             }
         }
         Ok(())
@@ -43,9 +42,9 @@ mod tests {
     use crate::services::io::{FileDestination, FileSource};
     use anyhow::Result;
     use async_trait::async_trait;
-    use image::{DynamicImage, ImageFormat};
-    use std::sync::Arc;
+    use image::DynamicImage;
     use std::any::Any;
+    use std::sync::Arc;
 
     struct MockSource;
 
@@ -71,7 +70,7 @@ mod tests {
         }
     }
 
-    fn create_pipeline<'a>(output: &'a str) -> ImagePipeline<'a> {
+    fn create_pipeline(output: &str) -> ImagePipeline<'_> {
         let source = Arc::new(MockSource);
         let destination = Arc::new(MockDestination);
         ImagePipeline::new(source, destination, "input", output)
@@ -108,7 +107,10 @@ mod tests {
         let result = pipeline.optimize_quality();
         assert!(result.is_err());
         let err = result.unwrap_err().to_string();
-        assert!(err.contains("Unsupported format"), 
-               "Expected error about unsupported format, got: {}", err);
+        assert!(
+            err.contains("Unsupported format"),
+            "Expected error about unsupported format, got: {}",
+            err
+        );
     }
-} 
+}

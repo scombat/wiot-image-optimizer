@@ -1,10 +1,10 @@
 use anyhow::Result;
 use async_trait::async_trait;
-use image::{DynamicImage, ImageFormat, open};
+use image::{DynamicImage, open};
+use std::fs;
 use std::sync::Arc;
 use tokio::task::spawn_blocking;
 use wiot_core::services::io::{FileAdapterFactory, FileDestination, FileSource};
-use std::fs;
 
 #[derive(Clone)]
 pub struct LocalFileAdapter;
@@ -78,8 +78,8 @@ impl FileAdapterFactory for LocalFileAdapter {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::path::Path;
     use image::ImageFormat;
+    use std::path::Path;
 
     fn image_path(name: &str) -> String {
         let mut path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
@@ -136,7 +136,7 @@ mod tests {
                 Path::new(&valid_img).exists(),
                 "Missing test image at tests/assets/test.png"
             );
-            
+
             // Read and verify image dimensions before test
             let result = adapter.read(&valid_img).await;
             assert!(result.is_ok(), "Failed to read image");
@@ -145,7 +145,7 @@ mod tests {
                 image.width() == 512,
                 "Expected a valid image: not a DynamicImage or missmatch width"
             );
-            
+
             // Write to a temporary file instead of the test image
             let temp_output = image_path("temp_test_output.png");
             let bytes = dummy_image_bytes();
@@ -154,12 +154,12 @@ mod tests {
                 "Failed to write image"
             );
             assert!(Path::new(&temp_output).exists(), "Output file not created");
-            
+
             // Clean up the temporary file
             if let Err(e) = std::fs::remove_file(&temp_output) {
                 eprintln!("Warning: Failed to clean up temporary file: {}", e);
             }
-            
+
             // Verify that the test image dimensions are unchanged
             let result = adapter.read(&valid_img).await;
             assert!(result.is_ok(), "Failed to read image after test");

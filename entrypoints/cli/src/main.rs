@@ -1,8 +1,8 @@
 use adapters::resolver::AdapterResolver;
 use anyhow::Result;
 use clap::Parser;
-use wiot_core::{ImagePipeline, models::options::ProcessingOptions};
 use wiot_core::models::quality_options::QualityOptions;
+use wiot_core::{ImagePipeline, models::options::ProcessingOptions};
 
 #[derive(Parser, Debug)]
 #[command(name = "wiot-cli")]
@@ -43,13 +43,8 @@ async fn main() -> Result<()> {
     };
 
     // Create a new ImagePipeline instance with options
-    let mut pipeline = ImagePipeline::with_options(
-        source,
-        destination,
-        &args.input,
-        &args.output,
-        options
-    );
+    let mut pipeline =
+        ImagePipeline::with_options(source, destination, &args.input, &args.output, options);
 
     // Run the pipeline
     pipeline.run().await?;

@@ -31,8 +31,8 @@ mod tests {
     use anyhow::Result;
     use async_trait::async_trait;
     use image::{DynamicImage, Rgba};
-    use std::sync::Arc;
     use std::any::Any;
+    use std::sync::Arc;
 
     /// Mock source that returns a 100x100 white image
     struct MockSource;

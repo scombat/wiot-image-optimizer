@@ -7,18 +7,13 @@ pub struct QualityOptions {
 
 impl Default for QualityOptions {
     fn default() -> Self {
-        Self {
-            quality: Some(80),
-        }
+        Self { quality: Some(80) }
     }
 }
 
 impl QualityOptions {
     pub fn new(quality: Option<u8>) -> Result<Self> {
-        let opts = Self {
-            quality,
-            ..Self::default()
-        };
+        let opts = Self { quality };
         opts.validate()?;
         Ok(opts)
     }
@@ -67,4 +62,4 @@ mod tests {
         let opts = QualityOptions::new(None).unwrap();
         assert!(!opts.is_enabled());
     }
-} 
+}

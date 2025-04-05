@@ -1,5 +1,5 @@
-pub use super::resize_options::ResizeOptions;
 pub use super::quality_options::QualityOptions;
+pub use super::resize_options::ResizeOptions;
 
 #[derive(Debug, Default, Clone)]
 pub struct ProcessingOptions {

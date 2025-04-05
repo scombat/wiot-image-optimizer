@@ -3,7 +3,7 @@ pub mod services;
 
 use image::DynamicImage;
 use models::options::ProcessingOptions;
-use services::{io::FileDestination, io::FileSource, encoder::{get_encoder, ImageEncoder}};
+use services::{encoder::get_encoder, io::FileDestination, io::FileSource};
 use std::sync::Arc;
 
 pub struct ImagePipeline<'a> {
@@ -62,19 +62,18 @@ impl<'a> ImagePipeline<'a> {
     }
 
     pub async fn store(&mut self) -> Result<(), anyhow::Error> {
-        let image = self.image
+        let image = self
+            .image
             .as_ref()
             .ok_or_else(|| anyhow::anyhow!("[core/pipeline] Image cannot be loaded"))?;
 
         // Get format from output file extension
-        let format = self.output
-            .split('.')
-            .last()
-            .unwrap_or("jpeg");
+        let format = self.output.split('.').next_back().unwrap_or("jpeg");
 
         // Get encoder for the format
-        let encoder = get_encoder(format)
-            .ok_or_else(|| anyhow::anyhow!("[core/pipeline] Unsupported output format: {}", format))?;
+        let encoder = get_encoder(format).ok_or_else(|| {
+            anyhow::anyhow!("[core/pipeline] Unsupported output format: {}", format)
+        })?;
 
         // Encode the image
         let encoded = encoder.encode(image, &self.options)?;

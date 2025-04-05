@@ -1,2 +1,2 @@
-pub mod resize;
 pub mod quality;
+pub mod resize;
