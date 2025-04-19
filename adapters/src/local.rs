@@ -194,6 +194,17 @@ mod tests {
                 );
             }
         }
+
+        #[tokio::test]
+        async fn test_as_any() {
+            let adapter = LocalFileAdapter;
+            let any_adapter: &dyn std::any::Any =
+                wiot_core::services::io::FileAdapterFactory::as_any(&adapter);
+            assert!(
+                any_adapter.is::<LocalFileAdapter>(),
+                "Expected adapter to be of type LocalFileAdapter"
+            );
+        }
     }
 
     mod read {
