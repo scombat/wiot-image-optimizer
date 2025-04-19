@@ -31,7 +31,7 @@ async fn main() -> Result<()> {
 
     // Create quality options if specified
     let quality_options = if args.quality.is_some() {
-        Some(QualityOptions::new(args.quality)?)
+        Some(QualityOptions::new(Some(args.quality.unwrap() as f32))?)
     } else {
         None
     };

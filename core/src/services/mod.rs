@@ -1,3 +1,3 @@
-pub mod encoder;
+pub mod encoding;
 pub mod io;
 pub mod options;

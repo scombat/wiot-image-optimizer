@@ -86,6 +86,7 @@ mod tests {
                 ..Default::default()
             }),
             quality: None,
+            format: None,
         };
     }
 
