@@ -2,11 +2,20 @@
 ![WIP](https://img.shields.io/badge/status-WIP-yellow?style=flat-square&logo=github)
 ![License](https://img.shields.io/badge/license-GPLv3-blue?style=flat-square)
 
+
+
 **WIOT** (Web Image Optimizer Toolkit) is an open, modular, and extensible image optimization tool focused on web performance.
 It is designed to run as a CLI, on servers, or inside cloud functions.
 
 > 🚧 **This project is currently under active development.**
 > Expect things to break, evolve, and improve rapidly. Feedback and contributions are welcome!
+
+---
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=scombat_wiot-image-optimizer&metric=bugs)](https://sonarcloud.io/summary/new_code?id=scombat_wiot-image-optimizer)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=scombat_wiot-image-optimizer&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=scombat_wiot-image-optimizer)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=scombat_wiot-image-optimizer&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=scombat_wiot-image-optimizer)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=scombat_wiot-image-optimizer&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=scombat_wiot-image-optimizer)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=scombat_wiot-image-optimizer&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=scombat_wiot-image-optimizer)
 
 ---
 
