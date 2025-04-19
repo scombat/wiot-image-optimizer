@@ -21,7 +21,11 @@ impl ImageEncoder for WebPEncoder {
         image: &DynamicImage,
         options: &ProcessingOptions,
     ) -> Result<()> {
-        let quality = options.quality.as_ref().unwrap().quality.unwrap();
+        let quality = options
+            .quality
+            .as_ref()
+            .and_then(|q| q.quality)
+            .ok_or_else(|| anyhow::anyhow!("Quality value is not set in ProcessingOptions"))?;
         let rgba = image.to_rgba8();
         let encoder = InnerWebPEncoder::from_rgba(&rgba, rgba.width(), rgba.height());
         let output = encoder.encode(quality);
