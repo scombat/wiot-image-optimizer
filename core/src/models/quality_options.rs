@@ -34,7 +34,7 @@ impl QualityOptions {
     }
 
     pub fn to_u8(&self) -> Option<u8> {
-        self.quality.map(|q| q as u8)
+        self.quality.map(|q| q.round() as u8)
     }
 }
 
@@ -73,6 +73,9 @@ mod tests {
     fn to_u8() {
         let opts = QualityOptions::new(Some(80.0)).unwrap();
         assert_eq!(opts.to_u8(), Some(80));
+
+        let opts = QualityOptions::new(Some(79.1)).unwrap();
+        assert_eq!(opts.to_u8(), Some(79));
 
         let opts = QualityOptions::new(None).unwrap();
         assert_eq!(opts.to_u8(), None);

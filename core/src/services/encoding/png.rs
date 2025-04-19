@@ -55,10 +55,14 @@ impl ImageEncoder for PngEncoder {
 
 impl PngEncoder {
     fn guess_encoding_params(quality: Option<f32>) -> (CompressionType, FilterType) {
-        let compression = match quality.unwrap_or(75.0) as u8 {
-            90..=100 => CompressionType::Fast,
+        // Map quality to PNG compression strategy:
+        // - High quality → Best compression (slow, small file)
+        // - Medium quality → Default
+        // - Low quality → Fast (quick, larger file)
+        let compression = match quality.unwrap_or(75.0).round() as u8 {
+            90..=100 => CompressionType::Best,
             40..=89 => CompressionType::Default,
-            _ => CompressionType::Best,
+            _ => CompressionType::Fast,
         };
 
         let filter = FilterType::Adaptive;
@@ -114,5 +118,39 @@ impl PngEncoder {
     /// For 16-bit buffers, convert &[u16] to &[u8]
     fn as_u8_slice<T: bytemuck::Pod>(buffer: &[T]) -> &[u8] {
         bytemuck::cast_slice(buffer)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use image::codecs::png::{CompressionType, FilterType};
+
+    #[test]
+    fn test_guess_encoding_params_for_quality_levels() {
+        let test_cases = vec![
+            (Some(95.0), CompressionType::Best),
+            (Some(90.0), CompressionType::Best),
+            (Some(89.0), CompressionType::Default),
+            (Some(75.0), CompressionType::Default),
+            (Some(40.0), CompressionType::Default),
+            (Some(39.0), CompressionType::Fast),
+            (Some(10.0), CompressionType::Fast),
+            (None, CompressionType::Default), // fallback quality = 75
+        ];
+
+        for (quality, expected_compression) in test_cases {
+            let (compression, filter) = PngEncoder::guess_encoding_params(quality);
+            assert_eq!(
+                compression, expected_compression,
+                "Failed for quality: {:?}",
+                quality
+            );
+            assert_eq!(
+                filter,
+                FilterType::Adaptive,
+                "Filter should always be Adaptive"
+            );
+        }
     }
 }
