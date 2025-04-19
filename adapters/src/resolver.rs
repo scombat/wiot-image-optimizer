@@ -110,4 +110,28 @@ mod tests {
         }
         unimplemented!();
     }
+
+    #[test]
+    fn test_resolve_source_fails_with_unknown_scheme() {
+        let result = AdapterResolver::resolve_source("unknown://path/to/file.jpg");
+        assert!(result.is_err(), "Expected error but got Ok");
+
+        let message = result.err().unwrap().to_string();
+        assert!(
+            message.contains("No suitable adapter found for source"),
+            "Unexpected error message: {message}"
+        );
+    }
+
+    #[test]
+    fn test_resolve_destination_fails_with_unknown_scheme() {
+        let result = AdapterResolver::resolve_destination("strange://file.png");
+        assert!(result.is_err(), "Expected error but got Ok");
+
+        let message = result.err().unwrap().to_string();
+        assert!(
+            message.contains("No suitable adapter found for destination"),
+            "Unexpected error message: {message}"
+        );
+    }
 }

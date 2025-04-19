@@ -47,6 +47,7 @@ impl ImagePipeline<'_> {
 mod tests {
     use super::*;
     use crate::models::options::{ProcessingOptions, QualityOptions};
+    use crate::services::encoding::codec_resolver::CodecResolver;
     use crate::services::io::{FileDestination, FileSource};
     use anyhow::Result;
     use async_trait::async_trait;
@@ -105,6 +106,20 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_quality_skipped_when_no_quality_option() {
+        let mut pipeline = create_pipeline("output.jpeg");
+        pipeline.load().await.unwrap();
+
+        // No quality set at all
+        pipeline.options.quality = None;
+        let result = pipeline.optimize_quality();
+        assert!(
+            result.is_ok(),
+            "Should silently skip when no quality options"
+        );
+    }
+
+    #[tokio::test]
     async fn test_quality_ignored_when_disabled() {
         let mut pipeline = create_pipeline("output.jpeg");
         pipeline.load().await.unwrap();
@@ -123,6 +138,19 @@ mod tests {
         assert!(
             result.is_err(),
             "Expected error when optimizing quality without loading image"
+        );
+    }
+
+    #[tokio::test]
+    async fn test_quality_skipped_when_encoder_handles_quality() {
+        let mut pipeline = create_pipeline("output.webp"); // WebP supports native quality
+        pipeline.load().await.unwrap();
+        set_quality_opts(&mut pipeline, Some(70.0));
+
+        let result = pipeline.optimize_quality();
+        assert!(
+            result.is_ok(),
+            "Should skip optimization if encoder handles quality natively"
         );
     }
 
@@ -147,5 +175,76 @@ mod tests {
         pipeline.optimize_quality().unwrap();
         let second = pipeline.image.as_ref().unwrap().clone();
         assert_eq!(first.as_bytes().to_vec(), second.as_bytes().to_vec());
+    }
+
+    #[tokio::test]
+    async fn test_quality_error_when_no_jpeg_encoder_available() {
+        let mut pipeline = create_pipeline("output.unknown"); // Unknown extension forces fallback
+        pipeline.load().await.unwrap();
+        set_quality_opts(&mut pipeline, Some(80.0));
+
+        // Remove JPEG encoder from registry
+        pipeline.codec_resolver = CodecResolver::new();
+        pipeline.codec_resolver.register_encoder(
+            ImageFormat::WebP,
+            Arc::new(crate::services::encoding::webp::WebPEncoder),
+        );
+
+        let result = pipeline.optimize_quality();
+        assert!(
+            result.is_err(),
+            "Should return error if no JPEG encoder is found during fallback"
+        );
+    }
+
+    #[tokio::test]
+    async fn test_quality_error_on_invalid_encoded_image() {
+        let mut pipeline = create_pipeline("output.jpeg");
+        pipeline.load().await.unwrap();
+        set_quality_opts(&mut pipeline, Some(60.0));
+
+        use crate::services::encoding::image_encoder::ImageEncoder;
+        use std::sync::Arc;
+
+        struct BrokenEncoder;
+        impl ImageEncoder for BrokenEncoder {
+            fn encode(
+                &self,
+                _image: &DynamicImage,
+                _options: &ProcessingOptions,
+            ) -> Result<Vec<u8>> {
+                Ok(vec![0u8; 10]) // Invalid data
+            }
+            fn encode_to_writer(
+                &self,
+                _: &mut dyn std::io::Write,
+                _: &DynamicImage,
+                _: &ProcessingOptions,
+            ) -> Result<()> {
+                Ok(())
+            }
+            fn extension(&self) -> &'static str {
+                "jpg"
+            }
+            fn mime_type(&self) -> &'static str {
+                "image/jpeg"
+            }
+            fn format(&self) -> ImageFormat {
+                ImageFormat::Jpeg
+            }
+            fn supports_native_quality_encoding(&self) -> bool {
+                false
+            }
+        }
+
+        pipeline
+            .codec_resolver
+            .register_encoder(ImageFormat::Jpeg, Arc::new(BrokenEncoder));
+
+        let result = pipeline.optimize_quality();
+        assert!(
+            result.is_err(),
+            "Should fail if optimized image is not decodable"
+        );
     }
 }
