@@ -41,59 +41,82 @@ The CLI currently supports:
 - ✅ Automatic adapter resolution for local paths
 - 🧪 Early support for resize options (via ProcessingOptions)
 
----
 
-## 🧭 Feature Progress
+## 🧩 Feature Progress
 
-| Area          | Feature                         | Status        |
-| ------------- | ------------------------------- | ------------- |
-| 🧰 Core        | Image pipeline                 | ✅ Done        |
-|               | Load image                      | ✅ Done        |
-|               | Process Image                   | ✅ Done        |
-|               | Save image                      | ✅ Done        |
-|               | Output Format detection         | ✅ Done        |
-|               | Automatic format selection      | 🧪 Planned     |
-|               | Resize (width & height)         | ✅ Done     |
-|               | Resize (DPI)                    | ✅ Done     |
-|               | Resize Aspect Ratio Strategy    | 🧪 Planned     |
-|               | Resize Cover Strategy           | 🧪 Planned     |
-|               | Resize Contain Strategy         | 🧪 Planned     |
-|               | Resize Fill Strategy            | 🧪 Planned     |
-|               | Quality                         | 🧪 Planned     |
-|               | Automatic Quality selection     | 🧪 Planned     |
-|               | Crop                            | 🧪 Planned     |
-|               | Flip                            | 🧪 Planned     |
-|               | Flop                            | 🧪 Planned     |
-|               | Blur                            | 🧪 Planned     |
-|               | Rotate                          | 🧪 Planned     |
-|               | Base64 Encode                   | 💭 Idea        |
-|               | Gravity centering               | 💭 Idea        |
-|               | IA powered object detection     | 💭 Idea        |
-|               | IA powered object focus         | 💭 Idea        |
-| 🧩 Adapters    | Local (read/write)              | ✅ Done       |
-|                | HTTP (read)                     | 🧪 Planned    |
-|                | S3 (read/write)                 | 🧪 Planned    |
-|               | (s)FTP (read/write)             | 💭 Idea        |
-| 🌐 Entrypoints | CLI                             | 🔧 In progress |
-|               | HTTP API                        | 🧪 Planned     |
-|               | AWS Lambda                      | 🧪 Planned     |
-|               | GCP Function                    | 💭 Idea     |
-|               | Azure Function                  | 💭 Idea     |
-|               | S3 (read/write)                 | 💭 Idea     |
-|               | GUI                             | 💭 Idea     |
-|               | CMS Plugins                     | 💭 Idea     |
-| 🧪 Testing     | Adapter unit tests              | ✅ Done        |
-|               | Pipeline integration tests      | 🧪 Planned     |
-|               | E2E tests                       | 🧪 Planned     |
-| 🧠 Tooling/UX/DX  | auto-resolver                  | ✅ Done        |
-|               | Presets processing              | 🧪 Planned |
-|               | Error handling/logs             | 🧪 Planned |
-|               | Contributing guide             | 🧪 Planned |
-|               | Docker image             | 💭 Idea |
-|               | Golden image             | 💭 Idea |
-|               | AWS Lambda Zip           | 💭 Idea |
-|               | One-click cloud deploy   | 💭 Idea |
-|               | srcset / responsive variants    | 💭 Idea        |
+#### Entrypoints Support
+
+| Feature                                 | Core 🧠 | CLI ✅ | API ❌ | Web UI ❌ |
+| --------------------------------------- | ------ | ----- | ----- | -------- |
+| Resize                                  | ✅      | ✅     | ❌     | ❌        |
+| ├─ Width / Height                       | ✅     | ✅     | ❌     | ❌        |
+| ├─ DPI                                  | ✅     | ✅     | ❌     | ❌        |
+| ├─ Maintain Aspect Ratio                | 🔜     | ❌     | ❌     | ❌        |
+| ├─ Cover Strategy                       | 🔜     | ❌     | ❌     | ❌        |
+| ├─ Contain Strategy                     | 🔜     | ❌     | ❌     | ❌        |
+| └─ Fill Strategy                        | 🔜     | ❌     | ❌     | ❌        |
+| Quality Optimization                    | ✅      | ✅     | ❌     | ❌        |
+| Format Conversion                       | ✅      | ✅     | ❌     | ❌        |
+| Encode/Store                            | ✅      | ✅     | ❌     | ❌        |
+| Auto-select Best Format (smallest file)  | 🚧      | ❌     | ❌     | ❌        |
+| Crop                                    | 🔜      | ❌     | ❌     | ❌        |
+| ├─ Width / Height                       | ✅     | ✅     | ❌     | ❌        |
+| ├─ Gravity (position)                   | ✅     | ✅     | ❌     | ❌        |
+| └─  AI Object gravity selection         | 🔜     | ❌     | ❌     | ❌        |
+| Flip (horizontal/vertical)              | 🔜      | ❌     | ❌     | ❌        |
+| Rotate                                  | 🔜      | ❌     | ❌     | ❌        |
+| Blur                                    | 🔜      | ❌     | ❌     | ❌        |
+| Grayscale / Color Effects               | 🔜      | ❌     | ❌     | ❌        |
+| Sharpen                                 | 🔜      | ❌     | ❌     | ❌        |
+| Watermark / Overlay                     | 🔜      | ❌     | ❌     | ❌        |
+| Metadata Handling                       | 🔜      | ❌     | ❌     | ❌        |
+
+#### Format Support
+
+| Format   | Encode | Decode | Notes                  |
+| -------- | ------ | ------ | ---------------------- |
+| JPEG     | ✅      | ✅      | Native quality support |
+| PNG      | ✅      | ✅      | Custom quality mapping |
+| WebP     | ✅      | ✅      | Requires `webp` crate  |
+| AVIF     | ❌      | ❌      | Planned                |
+| GIF      | ❌      | ❌      | Planned                |
+| HDR      | ❌      | ❌      | Planned                |
+| BMP      | ❌      | ❌      | Planned                |
+| TIFF     | ❌      | ❌      | Planned                |
+| ICO      | ❌      | ❌      | Planned                |
+| DSS      | ❌      | ❌      | Optional, low priority |
+| Farbfeld | ❌      | ❌      | Optional, low priority |
+| EXR      | ❌      | ❌      | Optional, low priority |
+| PNM      | ❌      | ❌      | Optional, low priority |
+| QOI      | ❌      | ❌      | Optional, low priority |
+| TGA      | ❌      | ❌      | Optional, low priority |
+
+#### 💡 Ideas & Extras
+
+| Feature / Idea                  | Status | Notes                                            |
+| ------------------------------- | ------ | ------------------------------------------------ |
+| Preset Processing               | 🧠      | Define named transformation profiles             |
+| Error Handling / Logs           | 🧠      | Structured error types and better CLI output     |
+| Contributing Guide              | 🛠️      | Add docs and contribution rules to the repo      |
+| Docker Image                    | 🧪      | For local usage or CI/CD pipelines               |
+| Golden Image Testing            | 🔜      | Compare output with golden snapshots             |
+| AWS Lambda Zip                  | 🔜      | Export zip with binary + dependencies            |
+| One-click Cloud Deploy          | 🔜      | AWS / GCP / Azure deployment shortcuts           |
+| GCP Function                    | ❌      | Bundle for Google Cloud Function                 |
+| Azure Function                  | ❌      | Same as GCP, with bindings                       |
+| S3 Support (Read / Write)       | 🔜      | Through `FileAdapter` abstraction                |
+| GUI                             | 🔜      | Lightweight Web UI for upload / preview / output |
+| CMS Plugins (WordPress, Ghost…) | ❌      | External plugins to use this as a backend        |
+| `srcset` / Responsive Variants  | 🔜      | Multi-resolution generation (for HTML img)       |
+| Base64 Encode Output            | ❌      | Useful for CSS background images or inline HTML  |
+
+**Legend**:
+- 🧠 Idea / planned feature
+- 🛠️ In progress
+- 🔜 Coming soon
+- 🧪 Experimental / needs validation
+- ❌ Not planned (yet)
+- ✅ Done / implemented
 
 
 ## 🚀 Getting Started
