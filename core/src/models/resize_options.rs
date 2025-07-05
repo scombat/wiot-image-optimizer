@@ -1,11 +1,21 @@
 use anyhow::{Result, anyhow};
+use clap::ValueEnum;
 use image::imageops::FilterType;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
+pub enum AspectRatioStrategy {
+    Fit,     // Default: proportional scaling (fit within width/height)
+    Cover,   // Fill entire target size, possibly cropping
+    Contain, // Fit inside target size without cropping, may leave empty space
+    Stretch, // Force image to match exact dimensions (ignore aspect ratio)
+}
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct ResizeOptions {
     pub width: Option<u32>,
     pub height: Option<u32>,
-    pub dpr: Option<f32>,
+    pub dpr: f32,
+    pub strategy: AspectRatioStrategy,
     pub filter: FilterType,
 }
 
@@ -14,27 +24,35 @@ impl Default for ResizeOptions {
         Self {
             width: None,
             height: None,
-            dpr: Some(1.0),
+            dpr: 1.0,
+            strategy: AspectRatioStrategy::Fit,
             filter: FilterType::Triangle,
         }
     }
 }
 
 impl ResizeOptions {
-    pub fn new(width: Option<u32>, height: Option<u32>, dpr: Option<f32>) -> Result<Self> {
-        let opts: ResizeOptions = Self {
+    pub fn new(width: Option<u32>, height: Option<u32>) -> Self {
+        ResizeOptions {
             width,
             height,
-            dpr,
             ..Self::default()
-        };
-        opts.validate()?;
-        Ok(opts)
+        }
+    }
+
+    pub fn dpr(mut self, dpr: f32) -> Self {
+        self.dpr = dpr;
+        self
+    }
+
+    pub fn strategy(mut self, strategy: AspectRatioStrategy) -> Self {
+        self.strategy = strategy;
+        self
     }
 
     pub fn is_enabled(&self) -> bool {
         let is_size_modified = self.width.is_some() || self.height.is_some();
-        let is_dpr_modified = matches!(self.dpr, Some(val) if val != 1.0);
+        let is_dpr_modified = self.dpr != 1.0;
         is_size_modified || is_dpr_modified
     }
 
@@ -59,11 +77,29 @@ impl ResizeOptions {
             }
         }
 
-        let dpr = self.dpr.unwrap_or(1.0);
+        let dpr = self.dpr;
         if !(0.1..=10.0).contains(&dpr) {
             return Err(anyhow!(
                 "Resize dpr must be between 0.1 and 10.0 (default is 1.0)"
             ));
+        }
+
+        if !self.is_enabled() {
+            return Ok(());
+        }
+
+        match self.strategy {
+            AspectRatioStrategy::Fit => {
+                return Ok(());
+            }
+            _ => {
+                if self.width.is_none() || self.height.is_none() {
+                    return Err(anyhow!(
+                        "{:?} strategy requires both width and height to be set",
+                        self.strategy
+                    ));
+                }
+            }
         }
 
         Ok(())
@@ -77,7 +113,7 @@ mod tests {
     #[test]
     fn test_default_dpr() {
         let opts = ResizeOptions::default();
-        assert_eq!(opts.dpr, Some(1.0));
+        assert_eq!(opts.dpr, 1.0);
     }
 
     mod is_enabled {
@@ -86,23 +122,23 @@ mod tests {
         #[test]
         fn test_is_enabled() {
             // Full
-            let opts = ResizeOptions::new(Some(800), Some(600), Some(2.0)).unwrap();
+            let opts = ResizeOptions::new(Some(800), Some(600));
             assert!(opts.is_enabled());
 
             // None
-            let opts = ResizeOptions::new(None, None, None).unwrap();
+            let opts = ResizeOptions::new(None, None);
             assert!(!opts.is_enabled());
 
             // Width only
-            let opts = ResizeOptions::new(Some(800), None, None).unwrap();
+            let opts = ResizeOptions::new(Some(800), None);
             assert!(opts.is_enabled());
 
             // Height only
-            let opts = ResizeOptions::new(None, Some(600), None).unwrap();
+            let opts = ResizeOptions::new(None, Some(600));
             assert!(opts.is_enabled());
 
             // DPR only != 1.0
-            let opts = ResizeOptions::new(None, None, Some(2.0)).unwrap();
+            let opts = ResizeOptions::new(None, None).dpr(2.0);
             assert!(opts.is_enabled());
         }
     }
@@ -112,46 +148,103 @@ mod tests {
 
         #[test]
         fn valid_resize_options_pass() {
-            let opts = vec![
-                ResizeOptions::new(Some(800), Some(600), Some(2.0)),
-                ResizeOptions::new(None, None, None),
-                ResizeOptions::new(Some(800), None, Some(2.0)),
-                ResizeOptions::new(None, Some(600), Some(2.0)),
-                ResizeOptions::new(None, None, Some(2.0)),
+            let opts = [
+                ResizeOptions::new(Some(800), Some(600)),
+                ResizeOptions::new(None, None).dpr(2.0),
+                ResizeOptions::new(Some(800), None),
+                ResizeOptions::new(None, Some(600)),
             ];
-            for opt in opts {
-                assert!(opt.is_ok());
+            for (i, opt) in opts.iter().enumerate() {
+                assert!(
+                    opt.validate().is_ok(),
+                    "Failed to validate opts[{}] = {:?}",
+                    i,
+                    opt
+                );
             }
         }
 
         #[test]
         fn invalid_resize_sizes_options_fails() {
             let opts = vec![
-                ResizeOptions::new(Some(0), Some(100), None),
-                ResizeOptions::new(Some(0), None, Some(2.0)),
-                ResizeOptions::new(None, Some(0), Some(2.0)),
-                ResizeOptions::new(Some(100), Some(0), None),
+                ResizeOptions::new(Some(0), Some(100)),
+                ResizeOptions::new(Some(0), None),
+                ResizeOptions::new(None, Some(0)),
+                ResizeOptions::new(Some(100), Some(0)),
             ];
             for opt in opts {
-                assert!(opt.is_err());
+                assert!(opt.validate().is_err());
             }
         }
 
         #[test]
         fn invalid_dpr_fails() {
             let opts = vec![
-                ResizeOptions::new(Some(100), Some(100), Some(0.0)),
-                ResizeOptions::new(Some(100), Some(100), Some(11.0)),
-                ResizeOptions::new(Some(100), Some(100), Some(0.05)),
-                ResizeOptions::new(Some(100), Some(100), Some(42.0)),
+                ResizeOptions::new(Some(100), Some(100)).dpr(0.0),
+                ResizeOptions::new(Some(100), Some(100)).dpr(11.0),
+                ResizeOptions::new(Some(100), Some(100)).dpr(0.05),
+                ResizeOptions::new(Some(100), Some(100)).dpr(42.0),
             ];
 
             for opt in opts {
-                assert!(opt.is_err());
+                assert!(opt.validate().is_err());
                 assert_eq!(
-                    opt.unwrap_err().to_string(),
+                    opt.validate().unwrap_err().to_string(),
                     "Resize dpr must be between 0.1 and 10.0 (default is 1.0)"
                 );
+            }
+        }
+
+        mod aspect_ratio_strategy {
+            use super::*;
+
+            mod fit {
+                use super::*;
+
+                #[test]
+                fn valid_resize_aspect_ratio_fit_strategy() {
+                    let cases = vec![
+                        ResizeOptions::new(Some(800), None),
+                        ResizeOptions::new(None, Some(600)),
+                        ResizeOptions::new(Some(1024), Some(768)),
+                        ResizeOptions::new(Some(500), None).dpr(1.5),
+                        ResizeOptions::new(None, Some(500)).dpr(0.5),
+                        ResizeOptions::new(Some(1200), Some(800)).dpr(2.0),
+                        ResizeOptions::new(None, None).dpr(1.2),
+                        ResizeOptions::new(None, None),
+                        ResizeOptions::new(Some(300), Some(200)).strategy(AspectRatioStrategy::Fit),
+                    ];
+
+                    for (i, opts) in cases.into_iter().enumerate() {
+                        assert!(
+                            opts.validate().is_ok(),
+                            "Fit strategy should accept case #{}: {:?}",
+                            i,
+                            opts
+                        );
+                    }
+                }
+
+                #[test]
+                fn invalid_resize_aspect_ratio_fit_strategy() {
+                    let cases = vec![
+                        ResizeOptions::new(Some(0), None).dpr(1.0),
+                        ResizeOptions::new(None, Some(0)).dpr(1.0),
+                        ResizeOptions::new(None, None).dpr(0.05),
+                        ResizeOptions::new(None, None).dpr(20.0),
+                        ResizeOptions::new(Some(800), None).dpr(0.05),
+                        ResizeOptions::new(None, Some(600)).dpr(20.0),
+                    ];
+
+                    for (i, opts) in cases.into_iter().enumerate() {
+                        assert!(
+                            opts.validate().is_err(),
+                            "Fit strategy should reject case #{}: {:?}",
+                            i,
+                            opts
+                        );
+                    }
+                }
             }
         }
     }

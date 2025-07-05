@@ -1,4 +1,6 @@
-use crate::ImagePipeline;
+use image::{DynamicImage, RgbaImage, imageops::overlay};
+
+use crate::{ImagePipeline, models::resize_options::AspectRatioStrategy};
 
 impl ImagePipeline<'_> {
     pub fn resize(&mut self) -> Result<(), anyhow::Error> {
@@ -10,14 +12,30 @@ impl ImagePipeline<'_> {
                     .ok_or_else(|| anyhow::anyhow!("[core/resize] Image cannot be loaded"))?;
                 let width = resize_options.width.unwrap_or(image.width());
                 let height = resize_options.height.unwrap_or(image.height());
-                let dpr = resize_options.dpr.unwrap();
+                let dpr = resize_options.dpr;
 
-                // Resize the image
-                *image = image.resize(
-                    (width as f32 * dpr).round() as u32,
-                    (height as f32 * dpr).round() as u32,
-                    resize_options.filter,
-                );
+                let target_w = (width as f32 * dpr).round() as u32;
+                let target_h = (height as f32 * dpr).round() as u32;
+                let filter = resize_options.filter;
+
+                let new_img: DynamicImage = match resize_options.strategy {
+                    AspectRatioStrategy::Fit => image.resize(target_w, target_h, filter),
+
+                    AspectRatioStrategy::Cover => image.resize_to_fill(target_w, target_h, filter),
+
+                    AspectRatioStrategy::Stretch => image.resize_exact(target_w, target_h, filter),
+
+                    AspectRatioStrategy::Contain => {
+                        let scaled = image.resize(target_w, target_h, filter);
+                        let mut shape = RgbaImage::new(target_w, target_h);
+                        let x = (target_w.saturating_sub(shape.width())) / 2;
+                        let y = (target_h.saturating_sub(shape.height())) / 2;
+                        overlay(&mut shape, &scaled, x.into(), y.into());
+                        DynamicImage::ImageRgba8(shape)
+                    }
+                };
+
+                *image = new_img;
             }
         }
         Ok(())
@@ -82,7 +100,7 @@ mod tests {
             resize: Some(ResizeOptions {
                 width,
                 height,
-                dpr,
+                dpr: dpr.unwrap_or(1.0),
                 ..Default::default()
             }),
             quality: None,

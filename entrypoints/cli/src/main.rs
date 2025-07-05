@@ -1,7 +1,9 @@
 use adapters::resolver::AdapterResolver;
 use anyhow::Result;
 use clap::Parser;
+use wiot_core::models::options::ResizeOptions;
 use wiot_core::models::quality_options::QualityOptions;
+use wiot_core::models::resize_options::AspectRatioStrategy;
 use wiot_core::{ImagePipeline, models::options::ProcessingOptions};
 
 #[derive(Parser, Debug)]
@@ -19,6 +21,22 @@ struct CliArgs {
     /// Image quality (1-100, default: 80)
     #[arg(short, long)]
     quality: Option<u8>,
+
+    /// Width
+    #[arg(short = 'W', long)]
+    width: Option<u32>,
+
+    /// Height
+    #[arg(short = 'H', long)]
+    height: Option<u32>,
+
+    /// DPR
+    #[arg(long)]
+    dpr: Option<f32>,
+
+    /// Aspect ratio strategy (Fit, Cover, Contain, Stretch, default: Fit)
+    #[arg(short, long, value_enum)]
+    aspect_ratio: Option<AspectRatioStrategy>,
 }
 
 #[tokio::main]
@@ -36,9 +54,30 @@ async fn main() -> Result<()> {
         None
     };
 
+    // Resize options
+    let resize_options = if args.width.is_some()
+        || args.height.is_some()
+        || args.dpr.is_some()
+        || args.aspect_ratio.is_some()
+    {
+        let mut ro = ResizeOptions::new(args.width, args.height);
+
+        if let Some(dpr_val) = args.dpr {
+            ro = ro.dpr(dpr_val);
+        }
+        if let Some(strat) = args.aspect_ratio {
+            ro = ro.strategy(strat);
+        }
+
+        Some(ro)
+    } else {
+        None
+    };
+
     // Create processing options
     let options = ProcessingOptions {
         quality: quality_options,
+        resize: resize_options,
         ..Default::default()
     };
 
