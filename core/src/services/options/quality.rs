@@ -16,6 +16,8 @@ impl ImagePipeline<'_> {
             return Ok(());
         }
 
+        let image = self.get_image()?.clone();
+
         // Step 3: Check if target encoder supports native quality encoding
         let encoder = self.resolve_encoder()?;
         if encoder.supports_native_quality_encoding() {
@@ -23,7 +25,6 @@ impl ImagePipeline<'_> {
         }
 
         // Step 4: Fallback to naive JPEG encoding with quality optimization
-        let image = self.get_image()?.clone();
         let jpeg_encoder = self
             .codec_resolver
             .resolve(ImageFormat::Jpeg)

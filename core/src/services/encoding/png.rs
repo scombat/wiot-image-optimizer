@@ -172,26 +172,22 @@ mod tests {
 
         #[test]
         fn test_extension_returns_png() {
-            let encoder = PngEncoder;
-            assert_eq!(encoder.extension(), "png");
+            assert_eq!(PngEncoder.extension(), "png");
         }
 
         #[test]
         fn test_mime_type_returns_correct_value() {
-            let encoder = PngEncoder;
-            assert_eq!(encoder.mime_type(), "image/png");
+            assert_eq!(PngEncoder.mime_type(), "image/png");
         }
 
         #[test]
         fn test_format_returns_png_format() {
-            let encoder = PngEncoder;
-            assert_eq!(encoder.format(), ImageFormat::Png);
+            assert_eq!(PngEncoder.format(), ImageFormat::Png);
         }
 
         #[test]
-        fn test_supports_native_quality_encoding_is_false() {
-            let encoder = PngEncoder;
-            assert!(!encoder.supports_native_quality_encoding());
+        fn test_supports_native_quality_encoding_is_true() {
+            assert!(PngEncoder.supports_native_quality_encoding());
         }
     }
 
@@ -203,17 +199,16 @@ mod tests {
             #[test]
             fn for_quality_levels() {
                 let test_cases = vec![
-                    (Some(95.0), CompressionType::Best),
-                    (Some(90.0), CompressionType::Best),
-                    (Some(89.0), CompressionType::Default),
-                    (Some(75.0), CompressionType::Default),
-                    (Some(40.0), CompressionType::Default),
-                    (Some(39.0), CompressionType::Fast),
-                    (Some(10.0), CompressionType::Fast),
-                    (None, CompressionType::Default), // fallback quality = 75
+                    (Some(100.0), CompressionType::Best, FilterType::Paeth),
+                    (Some(67.0), CompressionType::Best, FilterType::Paeth),
+                    (Some(66.0), CompressionType::Default, FilterType::Sub),
+                    (Some(34.0), CompressionType::Default, FilterType::Sub),
+                    (Some(33.0), CompressionType::Fast, FilterType::NoFilter),
+                    (Some(0.0), CompressionType::Fast, FilterType::NoFilter),
+                    (None, CompressionType::Best, FilterType::Paeth), // fallback quality = 75
                 ];
 
-                for (quality, expected_compression) in test_cases {
+                for (quality, expected_compression, expected_filter) in test_cases {
                     let (compression, filter) = PngEncoder::guess_encoding_params(quality);
                     assert_eq!(
                         compression, expected_compression,
@@ -221,9 +216,9 @@ mod tests {
                         quality
                     );
                     assert_eq!(
-                        filter,
-                        FilterType::Adaptive,
-                        "Filter should always be Adaptive"
+                        filter, expected_filter,
+                        "Filter should be {:?}",
+                        expected_filter
                     );
                 }
             }
