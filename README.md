@@ -39,7 +39,7 @@ The CLI currently supports:
 - ✅ Image loaded into stateful pipeline
 - ✅ Modular processing steps (resize, encoding, etc.)
 - ✅ Automatic adapter resolution for local paths
-- 🧪 Early support for resize options (via ProcessingOptions)
+- ✅ Early support for resize options (via ProcessingOptions)
 
 
 ## 🧩 Feature Progress
@@ -51,10 +51,11 @@ The CLI currently supports:
 | Resize                                  | ✅      | ✅     | ❌     | ❌        |
 | ├─ Width / Height                       | ✅     | ✅     | ❌     | ❌        |
 | ├─ DPI                                  | ✅     | ✅     | ❌     | ❌        |
-| ├─ Maintain Aspect Ratio                | 🔜     | ❌     | ❌     | ❌        |
-| ├─ Cover Strategy                       | 🔜     | ❌     | ❌     | ❌        |
-| ├─ Contain Strategy                     | 🔜     | ❌     | ❌     | ❌        |
-| └─ Fill Strategy                        | 🔜     | ❌     | ❌     | ❌        |
+| ├─ Maintain Aspect Ratio                | ✅     | ✅     | ❌     | ❌        |
+| ├─ Cover Strategy                       | ✅     | ✅     | ❌     | ❌        |
+| ├─ Stretch Strategy                     | ✅     | ✅     | ❌     | ❌        |
+| ├─ Contain Strategy                     | ✅     | ✅     | ❌     | ❌        |
+| └─ Fill Strategy                        | ✅     | ✅     | ❌     | ❌        |
 | Quality Optimization                    | ✅      | ✅     | ❌     | ❌        |
 | Format Conversion                       | ✅      | ✅     | ❌     | ❌        |
 | Encode/Store                            | ✅      | ✅     | ❌     | ❌        |
