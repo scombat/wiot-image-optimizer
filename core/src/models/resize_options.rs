@@ -26,7 +26,7 @@ impl Default for ResizeOptions {
             height: None,
             dpr: 1.0,
             strategy: AspectRatioStrategy::Fit,
-            filter: FilterType::Triangle,
+            filter: FilterType::Nearest,
         }
     }
 }
