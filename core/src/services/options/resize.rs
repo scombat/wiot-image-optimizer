@@ -1,6 +1,6 @@
-use image::{imageops::overlay, DynamicImage, RgbaImage};
+use image::{DynamicImage, RgbaImage, imageops::overlay};
 
-use crate::{models::resize_options::AspectRatioStrategy, ImagePipeline};
+use crate::{ImagePipeline, models::resize_options::AspectRatioStrategy};
 
 impl ImagePipeline<'_> {
     pub fn resize(&mut self) -> Result<(), anyhow::Error> {
