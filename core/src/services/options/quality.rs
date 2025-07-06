@@ -16,7 +16,8 @@ impl ImagePipeline<'_> {
             return Ok(());
         }
 
-        let image = self.get_image()?.clone();
+        // Get the image early to fail fast if it's not loaded, before doing expensive operations
+        let image = self.get_image()?;
 
         // Step 3: Check if target encoder supports native quality encoding
         let encoder = self.resolve_encoder()?;
@@ -32,7 +33,7 @@ impl ImagePipeline<'_> {
                 anyhow::anyhow!("[core/quality] No JPEG encoder available for quality optimization")
             })?;
 
-        let encoded = jpeg_encoder.encode(&image, &self.options)?;
+        let encoded = jpeg_encoder.encode(&image.clone(), &self.options)?;
 
         // Step 5: Override the image with the processed one
         // This is a workaround for the fact that we don't have a way to set the quality in the encoder
