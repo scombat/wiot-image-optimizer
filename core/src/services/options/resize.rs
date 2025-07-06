@@ -1,6 +1,6 @@
-use image::{DynamicImage, RgbaImage, imageops::overlay};
+use image::{imageops::overlay, DynamicImage, RgbaImage};
 
-use crate::{ImagePipeline, models::resize_options::AspectRatioStrategy};
+use crate::{models::resize_options::AspectRatioStrategy, ImagePipeline};
 
 impl ImagePipeline<'_> {
     pub fn resize(&mut self) -> Result<(), anyhow::Error> {
@@ -20,16 +20,13 @@ impl ImagePipeline<'_> {
 
                 let new_img: DynamicImage = match resize_options.strategy {
                     AspectRatioStrategy::Fit => image.resize(target_w, target_h, filter),
-
                     AspectRatioStrategy::Cover => image.resize_to_fill(target_w, target_h, filter),
-
                     AspectRatioStrategy::Stretch => image.resize_exact(target_w, target_h, filter),
-
                     AspectRatioStrategy::Contain => {
                         let scaled = image.resize(target_w, target_h, filter);
                         let mut shape = RgbaImage::new(target_w, target_h);
-                        let x = (target_w.saturating_sub(shape.width())) / 2;
-                        let y = (target_h.saturating_sub(shape.height())) / 2;
+                        let x = (target_w.saturating_sub(scaled.width())) / 2;
+                        let y = (target_h.saturating_sub(scaled.height())) / 2;
                         overlay(&mut shape, &scaled, x.into(), y.into());
                         DynamicImage::ImageRgba8(shape)
                     }
@@ -41,6 +38,7 @@ impl ImagePipeline<'_> {
         Ok(())
     }
 }
+
 #[cfg(test)]
 mod tests {
     use crate::ImagePipeline;
