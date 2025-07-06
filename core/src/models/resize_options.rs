@@ -246,6 +246,70 @@ mod tests {
                     }
                 }
             }
+
+            mod others {
+                use crate::models::resize_options;
+
+                use super::*;
+                static STRATEGIES: &[resize_options::AspectRatioStrategy] = &[
+                    AspectRatioStrategy::Cover,
+                    AspectRatioStrategy::Contain,
+                    AspectRatioStrategy::Stretch,
+                ];
+                #[test]
+                fn with_width_and_height_defined_should_be_valid_and_enabled() {
+                    let cases = [
+                        Some(1024),
+                        Some(768),
+                        Some(1200),
+                        Some(800),
+                        Some(300),
+                        Some(200),
+                    ];
+
+                    for (i, opts) in cases.chunks(2).enumerate() {
+                        for strategy in STRATEGIES.iter() {
+                            let operation =
+                                ResizeOptions::new(opts[0], opts[1]).strategy(*strategy);
+                            assert!(
+                                operation.validate().is_ok() && operation.is_enabled(),
+                                "{:?} strategy should accept case #{}: {:?}",
+                                strategy,
+                                i,
+                                opts
+                            );
+                        }
+                    }
+                }
+
+                #[test]
+                fn without_width_or_height_should_be_invalid_or_disabled() {
+                    let cases = [
+                        None,
+                        Some(768),
+                        Some(1200),
+                        None,
+                        None,
+                        None,
+                        Some(0),
+                        Some(768),
+                    ];
+
+                    for (i, opts) in cases.chunks(2).enumerate() {
+                        for strategy in STRATEGIES.iter() {
+                            let operation =
+                                ResizeOptions::new(opts[0], opts[1]).strategy(*strategy);
+                            assert!(
+                                operation.validate().is_err() || !operation.is_enabled(),
+                                "{:?} strategy should not accept case #{}: {:?}",
+                                strategy,
+                                i,
+                                opts
+                            );
+                        }
+                    }
+                }
+            }
         }
     }
 }
