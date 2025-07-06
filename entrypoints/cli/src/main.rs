@@ -1,9 +1,8 @@
 use adapters::resolver::AdapterResolver;
 use anyhow::Result;
 use clap::Parser;
-use wiot_core::models::options::ResizeOptions;
 use wiot_core::models::quality_options::QualityOptions;
-use wiot_core::models::resize_options::AspectRatioStrategy;
+use wiot_core::models::resize_options::{AspectRatioStrategy, ResizeOptions};
 use wiot_core::{ImagePipeline, models::options::ProcessingOptions};
 
 #[derive(Parser, Debug)]
