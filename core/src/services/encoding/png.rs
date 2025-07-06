@@ -54,12 +54,19 @@ impl ImageEncoder for PngEncoder {
 }
 
 impl PngEncoder {
+    /// Maps a user-provided "quality" value (0–100) to PNG compression and filter strategies.
+    ///
+    /// Rationale for thresholds:
+    /// - 0..=33   (Low quality):  Use Fast compression and NoFilter for speed, sacrificing file size.
+    /// - 34..=66  (Medium quality): Use Default compression and Sub filter for a balance of speed and size.
+    /// - 67..=100 (High quality):  Use Best compression and Paeth filter for smallest file, slowest encoding.
+    ///
+    /// These ranges are chosen to roughly split the quality scale into three intuitive bands:
+    ///   - 0–33: "I want it fast, don't care about size"
+    ///   - 34–66: "Balance speed and size"
+    ///   - 67–100: "I want the smallest file, even if it's slow"
     fn guess_encoding_params(quality: Option<f32>) -> (CompressionType, FilterType) {
         let q = quality.unwrap_or(75.0).round() as u8;
-        // Map quality to PNG compression strategy:
-        // - High quality → Best compression (slow, small file)
-        // - Medium quality → Default
-        // - Low quality → Fast (quick, larger file)
         let compression = match q {
             0..=33 => CompressionType::Fast,
             34..=66 => CompressionType::Default,
