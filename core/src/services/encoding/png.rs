@@ -49,23 +49,29 @@ impl ImageEncoder for PngEncoder {
     }
 
     fn supports_native_quality_encoding(&self) -> bool {
-        false
+        true
     }
 }
 
 impl PngEncoder {
     fn guess_encoding_params(quality: Option<f32>) -> (CompressionType, FilterType) {
+        let q = quality.unwrap_or(75.0).round() as u8;
         // Map quality to PNG compression strategy:
         // - High quality → Best compression (slow, small file)
         // - Medium quality → Default
         // - Low quality → Fast (quick, larger file)
-        let compression = match quality.unwrap_or(75.0).round() as u8 {
-            90..=100 => CompressionType::Best,
-            40..=89 => CompressionType::Default,
-            _ => CompressionType::Fast,
+        let compression = match q {
+            0..=33 => CompressionType::Fast,
+            34..=66 => CompressionType::Default,
+            _ => CompressionType::Best,
         };
 
-        let filter = FilterType::Adaptive;
+        let filter = match q {
+            0..=33 => FilterType::NoFilter,
+            34..=66 => FilterType::Sub,
+            _ => FilterType::Paeth,
+        };
+
         (compression, filter)
     }
 
