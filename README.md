@@ -79,7 +79,7 @@ The CLI currently supports:
 | JPEG     | ✅      | ✅      | Native quality support |
 | PNG      | ✅      | ✅      | Custom quality mapping |
 | WebP     | ✅      | ✅      | Requires `webp` crate  |
-| AVIF     | ❌      | ❌      | Planned                |
+| AVIF     | ✅      | ✅      | Requires `dav1d` lib    |
 | GIF      | ❌      | ❌      | Planned                |
 | HDR      | ❌      | ❌      | Planned                |
 | BMP      | ❌      | ❌      | Planned                |
