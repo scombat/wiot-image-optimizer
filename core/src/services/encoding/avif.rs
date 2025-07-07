@@ -141,8 +141,8 @@ mod tests {
     #[test]
     fn test_guess_encoding_params() {
         let available_cores = available_parallelism().unwrap().get();
-        let quarter_cores = available_cores / 4;
-        let half_cores = available_cores / 2;
+        let quarter_cores = max(available_cores / 4, 1);
+        let half_cores = max(available_cores / 2, 1);
 
         let cases = vec![
             (1.0, 1u8, 10u8, Some(quarter_cores)),
