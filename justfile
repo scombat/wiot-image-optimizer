@@ -7,6 +7,22 @@ install:
     just setup-hooks
     rustup component add rustfmt
     cargo install cargo-tarpaulin
+    just install-dav1d
+
+install-dav1d:
+    #!/bin/bash
+    set -e
+    if command -v brew >/dev/null 2>&1; then
+      brew install dav1d
+    elif command -v apt-get >/dev/null 2>&1; then
+      sudo apt-get update
+      sudo apt-get install -y libdav1d-dev pkg-config
+    elif command -v dnf >/dev/null 2>&1; then
+      sudo dnf install -y dav1d-devel pkgconf-pkg-config
+    else
+      echo "Please install dav1d and pkg-config manually."
+      exit 1
+    fi
 
 lint *OPTS="-- -D warnings":
     cargo clippy --workspace --all-targets --all-features {{OPTS}}
