@@ -11,6 +11,39 @@ runs:
         takeown /F C:\Windows\System32\bash.exe
         icacls C:\Windows\System32\bash.exe /grant administrators:F
         del C:\Windows\System32\bash.exe
+    - name: Install pkg-config (Windows only)
+      if: ${{ runner.os == 'Windows' }}
+      shell: powershell
+      run: choco install -y pkgconfiglite
+    - name: Add pkg-config to PATH (Windows only)
+      if: ${{ runner.os == 'Windows' }}
+      shell: bash
+      run: echo "/c/ProgramData/chocolatey/lib/pkgconfiglite/tools" >> $GITHUB_PATH
+    - name: Install vcpkg and dependencies (Windows only)
+      if: ${{ runner.os == 'Windows' }}
+      shell: bash
+      run: |
+        if [ ! -d "$HOME/vcpkg" ]; then
+          git clone https://github.com/microsoft/vcpkg.git "$HOME/vcpkg"
+          "$HOME/vcpkg/bootstrap-vcpkg.sh"
+        fi
+        "$HOME/vcpkg/vcpkg" install dav1d pkgconf
+        echo "VCPKG_ROOT=$HOME/vcpkg" >> $GITHUB_ENV
+        echo "PKG_CONFIG_PATH=$HOME/vcpkg/installed/x64-windows/lib/pkgconfig" >> $GITHUB_ENV
+
+        echo ">>> bin dir:"
+        ls -l "$HOME/vcpkg/installed/x64-windows/bin"
+        echo ">>> lib dir:"
+        ls -l "$HOME/vcpkg/installed/x64-windows/lib"
+
+        echo "SYSTEM_DEPS_DAV1D_SEARCH_NATIVE=$HOME/vcpkg/installed/x64-windows/bin" >> $GITHUB_ENV
+        echo "LIB=$HOME/vcpkg/installed/x64-windows/lib" >> $GITHUB_ENV
+        echo "/c/Users/runneradmin/vcpkg/installed/x64-windows/bin" >> $GITHUB_PATH
+
+    - name: Add vcpkg bin to PATH (Windows only)
+      if: ${{ runner.os == 'Windows' }}
+      shell: bash
+      run: echo "$HOME/vcpkg/installed/x64-windows/bin" >> $GITHUB_PATH
     - uses: dtolnay/rust-toolchain@stable
     - name: Cache
       uses: actions/cache@v4
