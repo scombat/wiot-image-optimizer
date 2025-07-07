@@ -2,6 +2,7 @@ use crate::{models::options::ProcessingOptions, services::encoding::image_encode
 use anyhow::{Result, anyhow};
 use image::ImageEncoder as _;
 use image::{DynamicImage, ImageFormat, codecs::avif::AvifEncoder as InnerAvifEncoder};
+use std::cmp::max;
 use std::io::Write;
 use std::thread::available_parallelism;
 
@@ -94,8 +95,8 @@ impl AvifEncoder {
         // - For any other value: Default to None.
         let thread_pool_size = match q {
             61..=100 => None,
-            21..=60 => Some(available_parallelism().unwrap().get() / 2),
-            1..=20 => Some(available_parallelism().unwrap().get() / 4),
+            21..=60 => Some(max(available_parallelism().unwrap().get() / 2, 1)),
+            1..=20 => Some(max(available_parallelism().unwrap().get() / 4, 1)),
             _ => None,
         };
 
