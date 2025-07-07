@@ -1,7 +1,9 @@
 use std::io::Write;
 
-use crate::models::options::ProcessingOptions;
-use crate::services::encoding::image_encoder::ImageEncoder;
+use crate::services::encoding::image_encoder::{ImageEncoder, encode_to_vec};
+use crate::{
+    models::options::ProcessingOptions, services::encoding::image_encoder::extract_quality,
+};
 use anyhow::Result;
 use image::{DynamicImage, ImageFormat};
 use webp::Encoder as InnerWebPEncoder;
@@ -10,9 +12,7 @@ pub struct WebPEncoder;
 
 impl ImageEncoder for WebPEncoder {
     fn encode(&self, image: &DynamicImage, options: &ProcessingOptions) -> Result<Vec<u8>> {
-        let mut buffer = Vec::new();
-        self.encode_to_writer(&mut buffer, image, options)?;
-        Ok(buffer)
+        encode_to_vec(self, image, options)
     }
 
     fn encode_to_writer(
@@ -21,11 +21,7 @@ impl ImageEncoder for WebPEncoder {
         image: &DynamicImage,
         options: &ProcessingOptions,
     ) -> Result<()> {
-        let quality = options
-            .quality
-            .as_ref()
-            .and_then(|q| q.quality)
-            .ok_or_else(|| anyhow::anyhow!("Quality value is not set in ProcessingOptions"))?;
+        let quality = extract_quality(options)?;
         let output = if image.color().has_alpha() {
             let rgba = image.to_rgba8();
             let encoder = InnerWebPEncoder::from_rgba(&rgba, rgba.width(), rgba.height());

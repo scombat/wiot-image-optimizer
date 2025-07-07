@@ -1,5 +1,6 @@
+use crate::services::encoding::image_encoder::{encode_to_vec, extract_quality};
 use crate::{models::options::ProcessingOptions, services::encoding::image_encoder::ImageEncoder};
-use anyhow::{Result, anyhow};
+use anyhow::Result;
 use image::ImageEncoder as _;
 use image::{DynamicImage, ImageFormat, codecs::avif::AvifEncoder as InnerAvifEncoder};
 use std::cmp::max;
@@ -10,9 +11,7 @@ pub struct AvifEncoder;
 
 impl ImageEncoder for AvifEncoder {
     fn encode(&self, image: &DynamicImage, options: &ProcessingOptions) -> Result<Vec<u8>> {
-        let mut buffer = Vec::new();
-        self.encode_to_writer(&mut buffer, image, options)?;
-        Ok(buffer)
+        encode_to_vec(self, image, options)
     }
 
     fn encode_to_writer(
@@ -21,11 +20,7 @@ impl ImageEncoder for AvifEncoder {
         image: &DynamicImage,
         options: &ProcessingOptions,
     ) -> Result<()> {
-        let quality = options
-            .quality
-            .as_ref()
-            .and_then(|q| q.quality)
-            .ok_or_else(|| anyhow!("Quality value is not set in ProcessingOptions"))?;
+        let quality = extract_quality(options)?;
         let (speed, final_quality, thread_pool_size) = Self::guess_encoding_params(Some(quality));
         let mut encoder = InnerAvifEncoder::new_with_speed_quality(writer, speed, final_quality);
         encoder = encoder.with_num_threads(thread_pool_size);
