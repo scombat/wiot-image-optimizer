@@ -26,9 +26,15 @@ impl ImageEncoder for WebPEncoder {
             .as_ref()
             .and_then(|q| q.quality)
             .ok_or_else(|| anyhow::anyhow!("Quality value is not set in ProcessingOptions"))?;
-        let rgba = image.to_rgba8();
-        let encoder = InnerWebPEncoder::from_rgba(&rgba, rgba.width(), rgba.height());
-        let output = encoder.encode(quality);
+        let output = if image.color().has_alpha() {
+            let rgba = image.to_rgba8();
+            let encoder = InnerWebPEncoder::from_rgba(&rgba, rgba.width(), rgba.height());
+            encoder.encode(quality)
+        } else {
+            let rgb = image.to_rgb8();
+            let encoder = InnerWebPEncoder::from_rgb(&rgb, rgb.width(), rgb.height());
+            encoder.encode(quality)
+        };
         writer.write_all(&output)?;
         Ok(())
     }
@@ -92,6 +98,47 @@ mod tests {
         let result = encoder.encode_to_writer(&mut buffer, &image, &options);
         assert!(result.is_ok(), "Writing to buffer should succeed");
         assert!(!buffer.is_empty());
+    }
+
+    #[test]
+    fn test_encode_rgb_image_without_alpha() {
+        // Create an RGB image (no alpha channel)
+        let image = DynamicImage::new_rgb8(32, 32);
+        let options = ProcessingOptions {
+            quality: Some(QualityOptions::new(Some(85.0)).unwrap()),
+            ..Default::default()
+        };
+        let encoder = WebPEncoder;
+
+        let result = encoder.encode(&image, &options);
+        assert!(result.is_ok(), "WebP encoding should succeed for RGB image");
+        let bytes = result.unwrap();
+        assert!(
+            !bytes.is_empty(),
+            "Encoded bytes should not be empty for RGB image"
+        );
+    }
+
+    #[test]
+    fn test_encode_rgba_image_with_alpha() {
+        // Create an RGBA image (with alpha channel)
+        let image = DynamicImage::new_rgba8(32, 32);
+        let options = ProcessingOptions {
+            quality: Some(QualityOptions::new(Some(85.0)).unwrap()),
+            ..Default::default()
+        };
+        let encoder = WebPEncoder;
+
+        let result = encoder.encode(&image, &options);
+        assert!(
+            result.is_ok(),
+            "WebP encoding should succeed for RGBA image"
+        );
+        let bytes = result.unwrap();
+        assert!(
+            !bytes.is_empty(),
+            "Encoded bytes should not be empty for RGBA image"
+        );
     }
 
     #[test]
