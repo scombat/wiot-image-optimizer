@@ -118,7 +118,7 @@ mod tests {
         };
         let encoder = AvifEncoder;
         let result = encoder.encode(&image, &options);
-        assert!(result.is_ok(), "Avig encoding should succeed");
+        assert!(result.is_ok(), "Avif encoding should succeed");
         let bytes = result.unwrap();
         assert!(!bytes.is_empty(), "Encoded bytes should not be empty");
     }
