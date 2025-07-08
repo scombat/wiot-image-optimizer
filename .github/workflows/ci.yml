@@ -47,15 +47,18 @@ jobs:
       - uses: Vampire/setup-wsl@v5
         if: ${{ matrix.os == 'windows-latest' }}
       - uses: ./.github/actions/setup-dep
-      - run: just test --all
+      - name: Tests
+        shell: bash
+        run: |
+          export PATH="$HOME/vcpkg/installed/x64-windows/bin:$PATH"
+          just test --all
 
   coverage:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-dep
-      - run: just coverage
-
+      - run: just coverage "-o lcov"
 
   build:
     needs:

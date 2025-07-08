@@ -30,10 +30,13 @@ impl CodecResolver {
 impl Default for CodecResolver {
     fn default() -> Self {
         let mut resolver = CodecResolver::new();
-        use crate::services::encoding::{jpeg::JpegEncoder, png::PngEncoder, webp::WebPEncoder};
+        use crate::services::encoding::{
+            avif::AvifEncoder, jpeg::JpegEncoder, png::PngEncoder, webp::WebPEncoder,
+        };
         resolver.register_encoder(ImageFormat::Jpeg, Arc::new(JpegEncoder));
         resolver.register_encoder(ImageFormat::Png, Arc::new(PngEncoder));
         resolver.register_encoder(ImageFormat::WebP, Arc::new(WebPEncoder));
+        resolver.register_encoder(ImageFormat::Avif, Arc::new(AvifEncoder));
 
         resolver
     }

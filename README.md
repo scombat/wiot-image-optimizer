@@ -79,7 +79,7 @@ The CLI currently supports:
 | JPEG     | ✅      | ✅      | Native quality support |
 | PNG      | ✅      | ✅      | Custom quality mapping |
 | WebP     | ✅      | ✅      | Requires `webp` crate  |
-| AVIF     | ❌      | ❌      | Planned                |
+| AVIF     | ✅      | ✅      | Requires `dav1d` lib    |
 | GIF      | ❌      | ❌      | Planned                |
 | HDR      | ❌      | ❌      | Planned                |
 | BMP      | ❌      | ❌      | Planned                |
@@ -183,12 +183,34 @@ just install
 
 This will:
 
-- Install required tools (`rustfmt`, `cargo-tarpaulin`, etc.)
+- Install required tools (`rustfmt`, `cargo-tarpaulin`, `dav1d` etc.)
 - Set up Git hooks to enforce formatting, linting, and testing before commit/push
 - Prepare your local dev environment
 
 > 💡 If you don’t have [`just`](https://github.com/casey/just) installed yet, do:
 > `cargo install just`
+
+#### System requirements (build)
+
+This project requires the following libraries to be installed on your environment:
+- [dav1d](https://github.com/videolan/dav1d)
+
+> 💡 If the install script did not work for the [`dav1d`](https://github.com/videolan/dav1d) library, you can try the following:
+> ##### macOS (Homebrew)
+> ```sh
+> brew install dav1d
+> ```
+>
+> ##### Ubuntu/Debian
+> ```sh
+> sudo apt-get update
+> sudo apt-get install libdav1d-dev pkg-config
+> ```
+>
+> ##### Fedora
+> ```sh
+> sudo dnf install dav1d-devel pkgconf-pkg-config
+> ```
 
 ---
 

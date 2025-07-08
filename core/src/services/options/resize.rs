@@ -24,11 +24,19 @@ impl ImagePipeline<'_> {
                     AspectRatioStrategy::Stretch => image.resize_exact(target_w, target_h, filter),
                     AspectRatioStrategy::Contain => {
                         let scaled = image.resize(target_w, target_h, filter);
-                        let mut shape = RgbaImage::new(target_w, target_h);
-                        let x = (target_w.saturating_sub(scaled.width())) / 2;
-                        let y = (target_h.saturating_sub(scaled.height())) / 2;
-                        overlay(&mut shape, &scaled, x.into(), y.into());
-                        DynamicImage::ImageRgba8(shape)
+                        let (scaled_w, scaled_h) = (scaled.width(), scaled.height());
+                        let x = (target_w.saturating_sub(scaled_w)) / 2;
+                        let y = (target_h.saturating_sub(scaled_h)) / 2;
+
+                        if image.color().has_alpha() {
+                            let mut shape = RgbaImage::new(target_w, target_h);
+                            overlay(&mut shape, &scaled, x.into(), y.into());
+                            DynamicImage::ImageRgba8(shape)
+                        } else {
+                            let mut shape = image::RgbImage::new(target_w, target_h);
+                            overlay(&mut shape, &scaled.to_rgb8(), x.into(), y.into());
+                            DynamicImage::ImageRgb8(shape)
+                        }
                     }
                 };
 
@@ -170,5 +178,62 @@ mod tests {
         assert!(pipeline.image.is_some());
         assert_eq!(pipeline.image.as_ref().unwrap().width(), 200);
         assert_eq!(pipeline.image.as_ref().unwrap().height(), 200);
+    }
+
+    #[tokio::test]
+    async fn test_pipeline_resize_and_encode_with_alpha() {
+        use crate::models::options::ProcessingOptions;
+        use crate::services::encoding::image_encoder::ImageEncoder;
+        use crate::services::encoding::png::PngEncoder;
+        use image::DynamicImage;
+
+        let mut pipeline = create_pipeline();
+        // Set a small resize with alpha (RGBA)
+        set_opts(&mut pipeline, Some(32), Some(32), None);
+        verify_base_image_size(&mut pipeline).await;
+
+        pipeline.resize().unwrap();
+        assert!(pipeline.image.is_some());
+        let image = pipeline.image.as_ref().unwrap();
+
+        // Ensure the image has alpha
+        assert!(matches!(image, DynamicImage::ImageRgba8(_)));
+
+        // Try encoding with PNG (supports alpha)
+        let encoder = PngEncoder;
+        let options = ProcessingOptions::default();
+        let encoded = encoder.encode(image, &options);
+        assert!(encoded.is_ok(), "PNG encoding with alpha should succeed");
+        let bytes = encoded.unwrap();
+        assert!(!bytes.is_empty(), "Encoded PNG bytes should not be empty");
+    }
+
+    #[tokio::test]
+    async fn test_pipeline_resize_and_encode_without_alpha() {
+        use crate::models::options::ProcessingOptions;
+        use crate::services::encoding::image_encoder::ImageEncoder;
+        use crate::services::encoding::png::PngEncoder;
+        use image::DynamicImage;
+
+        let mut pipeline = create_pipeline();
+        // Set a small resize and force RGB (no alpha)
+        set_opts(&mut pipeline, Some(32), Some(32), None);
+        verify_base_image_size(&mut pipeline).await;
+
+        pipeline.resize().unwrap();
+        assert!(pipeline.image.is_some());
+        let image = pipeline.image.as_ref().unwrap().to_rgb8();
+        let image = DynamicImage::ImageRgb8(image);
+
+        // Ensure the image does not have alpha
+        assert!(matches!(image, DynamicImage::ImageRgb8(_)));
+
+        // Try encoding with PNG (no alpha)
+        let encoder = PngEncoder;
+        let options = ProcessingOptions::default();
+        let encoded = encoder.encode(&image, &options);
+        assert!(encoded.is_ok(), "PNG encoding without alpha should succeed");
+        let bytes = encoded.unwrap();
+        assert!(!bytes.is_empty(), "Encoded PNG bytes should not be empty");
     }
 }

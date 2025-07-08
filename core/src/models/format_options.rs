@@ -33,7 +33,12 @@ impl FormatOptions {
     }
 
     fn supported_formats() -> Vec<ImageFormat> {
-        vec![ImageFormat::WebP, ImageFormat::Jpeg, ImageFormat::Png]
+        vec![
+            ImageFormat::WebP,
+            ImageFormat::Avif,
+            ImageFormat::Jpeg,
+            ImageFormat::Png,
+        ]
     }
 
     pub fn get_format(&self) -> Option<ImageFormat> {
