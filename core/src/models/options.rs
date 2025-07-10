@@ -9,6 +9,7 @@ pub struct ProcessingOptions {
     pub format: Option<FormatOptions>,
     pub quality: Option<QualityOptions>,
     pub resize: Option<ResizeOptions>,
+    pub auto_select_format: bool,
 }
 
 impl ProcessingOptions {
