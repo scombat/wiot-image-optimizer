@@ -4,7 +4,12 @@ impl ImagePipeline<'_> {
     pub async fn run(&mut self) -> Result<(), anyhow::Error> {
         self.load().await?;
         self.process()?;
-        self.encode().await?;
+
+        match self.options.auto_select_format {
+            true => self.encode_auto_format().await?,
+            _ => self.encode().await?,
+        }
+
         self.store().await?;
         Ok(())
     }
@@ -21,7 +26,7 @@ impl ImagePipeline<'_> {
         let encoded = self.encoded_bytes.as_ref().ok_or_else(|| {
             anyhow::anyhow!("[core/pipeline] No encoded image available for storage")
         })?;
-        self.destination.write(self.output, encoded).await?;
+        self.destination.write(&self.output, encoded).await?;
         Ok(())
     }
 

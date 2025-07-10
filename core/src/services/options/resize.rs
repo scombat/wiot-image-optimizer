@@ -93,7 +93,7 @@ mod tests {
     fn create_pipeline() -> ImagePipeline<'static> {
         let source = Arc::new(MockSource);
         let destination = Arc::new(MockDestination);
-        ImagePipeline::new(source, destination, "input", "output")
+        ImagePipeline::new(source, destination, "input", "output".to_string())
     }
 
     fn set_opts(
@@ -111,6 +111,7 @@ mod tests {
             }),
             quality: None,
             format: None,
+            auto_select_format: false,
         };
     }
 

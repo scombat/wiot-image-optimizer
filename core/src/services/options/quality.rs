@@ -81,7 +81,7 @@ mod tests {
         }
     }
 
-    fn create_pipeline(output: &str) -> ImagePipeline<'_> {
+    fn create_pipeline(output: String) -> ImagePipeline<'static> {
         let source = Arc::new(MockSource);
         let destination = Arc::new(MockDestination);
         ImagePipeline::new(source, destination, "input", output)
@@ -96,12 +96,12 @@ mod tests {
 
     #[tokio::test]
     async fn test_quality_optimization() {
-        let mut pipeline = create_pipeline("output.jpeg");
+        let mut pipeline = create_pipeline("output.jpeg".to_string());
         pipeline.load().await.unwrap();
         set_quality_opts(&mut pipeline, Some(50.0));
         assert!(pipeline.optimize_quality().is_ok());
 
-        let mut pipeline = create_pipeline("output.webp");
+        let mut pipeline = create_pipeline("output.webp".to_string());
         pipeline.load().await.unwrap();
         set_quality_opts(&mut pipeline, Some(75.0));
         assert!(pipeline.optimize_quality().is_ok());
@@ -109,7 +109,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_quality_skipped_when_no_quality_option() {
-        let mut pipeline = create_pipeline("output.jpeg");
+        let mut pipeline = create_pipeline("output.jpeg".to_string());
         pipeline.load().await.unwrap();
 
         // No quality set at all
@@ -123,7 +123,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_quality_ignored_when_disabled() {
-        let mut pipeline = create_pipeline("output.jpeg");
+        let mut pipeline = create_pipeline("output.jpeg".to_string());
         pipeline.load().await.unwrap();
         set_quality_opts(&mut pipeline, Some(100.0));
         assert!(pipeline.optimize_quality().is_ok());
@@ -131,7 +131,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_quality_applied_only_if_image_loaded() {
-        let mut pipeline = create_pipeline("output.png");
+        let mut pipeline = create_pipeline("output.png".to_string());
         set_quality_opts(&mut pipeline, Some(60.0));
 
         // Do NOT load the image here
@@ -145,7 +145,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_quality_skipped_when_encoder_handles_quality() {
-        let mut pipeline = create_pipeline("output.webp"); // WebP supports native quality
+        let mut pipeline = create_pipeline("output.webp".to_string()); // WebP supports native quality
         pipeline.load().await.unwrap();
         set_quality_opts(&mut pipeline, Some(70.0));
 
@@ -158,7 +158,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_quality_preserves_dimensions_after_optimization() {
-        let mut pipeline = create_pipeline("output.jpeg");
+        let mut pipeline = create_pipeline("output.jpeg".to_string());
         pipeline.load().await.unwrap();
         set_quality_opts(&mut pipeline, Some(30.0));
         let original_dims = pipeline.image.as_ref().unwrap().dimensions();
@@ -169,7 +169,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_quality_multiple_runs_are_idempotent() {
-        let mut pipeline = create_pipeline("output.jpeg");
+        let mut pipeline = create_pipeline("output.jpeg".to_string());
         pipeline.load().await.unwrap();
         set_quality_opts(&mut pipeline, Some(50.0));
         pipeline.optimize_quality().unwrap();
@@ -181,7 +181,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_quality_error_when_no_jpeg_encoder_available() {
-        let mut pipeline = create_pipeline("output.unknown"); // Unknown extension forces fallback
+        let mut pipeline = create_pipeline("output.unknown".to_string()); // Unknown extension forces fallback
         pipeline.load().await.unwrap();
         set_quality_opts(&mut pipeline, Some(80.0));
 
@@ -201,7 +201,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_quality_error_on_invalid_encoded_image() {
-        let mut pipeline = create_pipeline("output.jpeg");
+        let mut pipeline = create_pipeline("output.jpeg".to_string());
         pipeline.load().await.unwrap();
         set_quality_opts(&mut pipeline, Some(60.0));
 

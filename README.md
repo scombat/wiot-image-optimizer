@@ -59,7 +59,7 @@ The CLI currently supports:
 | Quality Optimization                    | ✅      | ✅     | ❌     | ❌        |
 | Format Conversion                       | ✅      | ✅     | ❌     | ❌        |
 | Encode/Store                            | ✅      | ✅     | ❌     | ❌        |
-| Auto-select Best Format (smallest file)  | 🚧      | ❌     | ❌     | ❌        |
+| Auto-select Best Format (smallest file)  | ✅      | ✅     | ❌     | ❌        |
 | Crop                                    | 🔜      | ❌     | ❌     | ❌        |
 | ├─ Width / Height                       | ✅     | ✅     | ❌     | ❌        |
 | ├─ Gravity (position)                   | ✅     | ✅     | ❌     | ❌        |
