@@ -15,7 +15,7 @@ pub struct ImagePipeline<'a> {
     source: Arc<dyn FileSource>,
     destination: Arc<dyn FileDestination>,
     input: &'a str,
-    output: &'a str,
+    output: String,
     options: ProcessingOptions,
     image: Option<DynamicImage>,
     codec_resolver: CodecResolver,
@@ -27,7 +27,7 @@ impl<'a> ImagePipeline<'a> {
         source: Arc<dyn FileSource>,
         destination: Arc<dyn FileDestination>,
         input: &'a str,
-        output: &'a str,
+        output: String,
     ) -> Self {
         ImagePipeline {
             source,
@@ -45,7 +45,7 @@ impl<'a> ImagePipeline<'a> {
         source: Arc<dyn FileSource>,
         destination: Arc<dyn FileDestination>,
         input: &'a str,
-        output: &'a str,
+        output: String,
         options: ProcessingOptions,
     ) -> Self {
         ImagePipeline {

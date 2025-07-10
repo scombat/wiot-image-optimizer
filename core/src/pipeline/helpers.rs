@@ -15,7 +15,7 @@ impl ImagePipeline<'_> {
             .format
             .as_ref()
             .and_then(|f| f.get_format())
-            .or_else(|| infer_format_from_path(self.output))
+            .or_else(|| infer_format_from_path(&self.output))
             .or_else(|| infer_format_from_path(self.input))
             .unwrap_or(ImageFormat::Jpeg)
     }
@@ -23,7 +23,7 @@ impl ImagePipeline<'_> {
     pub fn resolve_encoder(&self) -> Result<&Arc<dyn ImageEncoder>, anyhow::Error> {
         let target_format = self.target_format();
 
-        if let Some(path_format) = infer_format_from_path(self.output) {
+        if let Some(path_format) = infer_format_from_path(&self.output) {
             if self.options.format.is_some() && path_format != target_format {
                 return Err(anyhow::anyhow!(
                     "[core/pipeline] Output format does not match the specified format"
@@ -31,10 +31,17 @@ impl ImagePipeline<'_> {
             }
         }
 
-        self.codec_resolver.resolve(target_format).ok_or_else(|| {
+        self.resolve_encoder_by_format(target_format)
+    }
+
+    pub fn resolve_encoder_by_format(
+        &self,
+        format: ImageFormat,
+    ) -> Result<&Arc<dyn ImageEncoder>, anyhow::Error> {
+        self.codec_resolver.resolve(format).ok_or_else(|| {
             anyhow::anyhow!(
                 "[core/pipeline] No encoder registered for format: {}",
-                target_format.to_mime_type()
+                format.to_mime_type()
             )
         })
     }
