@@ -61,7 +61,7 @@ struct CliArgs {
     ///
     /// The format will be chosen to produce the smallest image.
     /// Default formats are: WebP, Avif, and Jpeg or Png depending on whether the image contains transparency.
-    /// This flag is incompatible with the "format" and "output" options.
+    /// This flag is incompatible with the "format" option.
     #[arg(long, conflicts_with_all = &["format"])]
     auto_format: bool,
 }
