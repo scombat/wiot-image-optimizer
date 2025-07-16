@@ -3,7 +3,8 @@ use clap::Parser;
 use wiot_core::{ImagePipeline, models::options::ProcessingOptions};
 mod args;
 use crate::args::{
-    crop::CropArgs, format::FormatArgs, io::IoArgs, quality::QualityArgs, resize::ResizeArgs,
+    crop::CropArgs, format::FormatArgs, io::IoArgs, mirror::MirrorArgs, quality::QualityArgs,
+    resize::ResizeArgs,
 };
 use wiot_core::models::options::GravityOptions;
 
@@ -26,9 +27,11 @@ struct CliArgs {
     #[command(flatten)]
     pub quality: QualityArgs,
 
-    /// Anchor when no offsets are given
     #[arg(short, long, value_enum)]
     pub gravity: Option<GravityOptions>,
+
+    #[command(flatten)]
+    pub mirror: MirrorArgs,
 }
 
 #[tokio::main]
@@ -45,6 +48,7 @@ async fn main() -> Result<()> {
         crop: args.crop.get(),
         auto_select_format: args.format.auto_format,
         gravity: args.gravity,
+        mirror: args.mirror.get(),
         ..Default::default()
     };
 

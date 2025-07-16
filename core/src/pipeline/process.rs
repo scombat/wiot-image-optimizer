@@ -5,6 +5,7 @@ impl ImagePipeline<'_> {
         self.crop()?;
         self.resize()?;
         self.optimize_quality()?;
+        self.mirror()?;
         Ok(())
     }
 }
