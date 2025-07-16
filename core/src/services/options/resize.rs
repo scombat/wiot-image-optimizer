@@ -110,8 +110,10 @@ mod tests {
                 ..Default::default()
             }),
             quality: None,
+            gravity: None,
             format: None,
             auto_select_format: false,
+            crop: None,
         };
     }
 
