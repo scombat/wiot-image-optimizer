@@ -1,6 +1,8 @@
 use image::ImageFormat;
 
+pub use super::crop_options::CropOptions;
 pub use super::format_options::FormatOptions;
+pub use super::gravity_options::GravityOptions;
 pub use super::quality_options::QualityOptions;
 pub use super::resize_options::ResizeOptions;
 
@@ -10,6 +12,8 @@ pub struct ProcessingOptions {
     pub quality: Option<QualityOptions>,
     pub resize: Option<ResizeOptions>,
     pub auto_select_format: bool,
+    pub crop: Option<CropOptions>,
+    pub gravity: Option<GravityOptions>,
 }
 
 impl ProcessingOptions {
