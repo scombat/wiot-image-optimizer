@@ -36,11 +36,11 @@ impl CropOptions {
         // Validate offset_x and offset_y: if present, must be percent between -100% and +100% or any px
         let check_offset = |name: &str, coord: &Option<Coord>| -> Result<(), Error> {
             if let Some(Coord::Percent(p)) = coord {
-                if *p < -1.0 || *p > 1.0 {
+                if *p < -100.0 || *p > 100.0 {
                     return Err(anyhow::anyhow!(
                         "{} percent must be between -100% and +100%, got {}%",
                         name,
-                        p * 100.0
+                        p
                     ));
                 }
             }

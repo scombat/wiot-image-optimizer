@@ -37,8 +37,8 @@ async fn main() -> Result<()> {
 
     let input = args.io.input.as_str();
     let output = args.io.get_output();
-    let source = args.io.resolve_source().unwrap();
-    let destination = args.io.resolve_destination().unwrap();
+    let source = args.io.resolve_source()?;
+    let destination = args.io.resolve_destination()?;
     let options = ProcessingOptions {
         quality: args.quality.get(),
         resize: args.resize.get(),
