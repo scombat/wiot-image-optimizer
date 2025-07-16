@@ -60,7 +60,7 @@ The CLI currently supports:
 | Format Conversion                       | ✅      | ✅     | ❌     | ❌        |
 | Encode/Store                            | ✅      | ✅     | ❌     | ❌        |
 | Auto-select Best Format (smallest file)  | ✅      | ✅     | ❌     | ❌        |
-| Crop                                    | 🔜      | ❌     | ❌     | ❌        |
+| Crop                                    | ✅      | ✅     | ❌     | ❌        |
 | ├─ Width / Height                       | ✅     | ✅     | ❌     | ❌        |
 | ├─ Gravity (position)                   | ✅     | ✅     | ❌     | ❌        |
 | └─  AI Object gravity selection         | 🔜     | ❌     | ❌     | ❌        |
