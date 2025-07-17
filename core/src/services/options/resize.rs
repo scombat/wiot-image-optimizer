@@ -111,6 +111,7 @@ mod tests {
             }),
             quality: None,
             gravity: None,
+            rotate: None,
             format: None,
             auto_select_format: false,
             crop: None,

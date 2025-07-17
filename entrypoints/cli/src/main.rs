@@ -4,7 +4,7 @@ use wiot_core::{ImagePipeline, models::options::ProcessingOptions};
 mod args;
 use crate::args::{
     crop::CropArgs, format::FormatArgs, io::IoArgs, mirror::MirrorArgs, quality::QualityArgs,
-    resize::ResizeArgs,
+    resize::ResizeArgs, rotate::RotateArgs,
 };
 use wiot_core::models::options::GravityOptions;
 
@@ -32,6 +32,9 @@ struct CliArgs {
 
     #[command(flatten)]
     pub mirror: MirrorArgs,
+
+    #[command(flatten)]
+    pub rotate: RotateArgs,
 }
 
 #[tokio::main]
@@ -49,6 +52,7 @@ async fn main() -> Result<()> {
         auto_select_format: args.format.auto_format,
         gravity: args.gravity,
         mirror: args.mirror.get(),
+        rotate: args.rotate.get(),
         ..Default::default()
     };
 
