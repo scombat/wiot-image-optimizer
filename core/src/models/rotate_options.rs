@@ -12,8 +12,9 @@ impl RotateOptions {
 
     pub fn validate(&self) -> Result<(), anyhow::Error> {
         if let Some(degrees) = self.angle_degrees {
-            if degrees == 0.0 {
-                return Err(anyhow!("Rotate must be between greater than 0.0"));
+            const EPSILON: f32 = 1e-6;
+            if degrees.abs() < EPSILON {
+                return Err(anyhow!("Rotate must be greater than 0.0"));
             }
         }
         Ok(())
