@@ -10,6 +10,9 @@ pub struct BlurArgs {
 
 impl BlurArgs {
     pub fn get(&self) -> Option<BlurOptions> {
-        Some(BlurOptions { blur: self.blur })
+        match self.blur {
+            Some(blur_value) => Some(BlurOptions { blur: Some(blur_value) }),
+            None => None,
+        }
     }
 }
