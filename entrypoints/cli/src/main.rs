@@ -3,8 +3,8 @@ use clap::Parser;
 use wiot_core::{ImagePipeline, models::options::ProcessingOptions};
 mod args;
 use crate::args::{
-    blur::BlurArgs, crop::CropArgs, format::FormatArgs, io::IoArgs, mirror::MirrorArgs,
-    quality::QualityArgs, resize::ResizeArgs, rotate::RotateArgs,
+    blur::BlurArgs, colors_effects::ColorsEffectsArgs, crop::CropArgs, format::FormatArgs,
+    io::IoArgs, mirror::MirrorArgs, quality::QualityArgs, resize::ResizeArgs, rotate::RotateArgs,
 };
 use wiot_core::models::options::GravityOptions;
 
@@ -38,6 +38,9 @@ struct CliArgs {
 
     #[command(flatten)]
     pub blur: BlurArgs,
+
+    #[command(flatten)]
+    pub colors: ColorsEffectsArgs,
 }
 
 #[tokio::main]
@@ -57,6 +60,7 @@ async fn main() -> Result<()> {
         mirror: args.mirror.get(),
         rotate: args.rotate.get(),
         blur: args.blur.get(),
+        colors: args.colors.get(),
         ..Default::default()
     };
 

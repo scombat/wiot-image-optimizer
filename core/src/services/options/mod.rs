@@ -1,4 +1,5 @@
 pub mod blur;
+pub mod colors;
 pub mod crop;
 pub mod gravity;
 pub mod mirror;

@@ -1,6 +1,7 @@
 use image::ImageFormat;
 
 pub use super::blur_options::BlurOptions;
+pub use super::colors_options::ColorsOptions;
 pub use super::crop_options::CropOptions;
 pub use super::format_options::FormatOptions;
 pub use super::gravity_options::GravityOptions;
@@ -20,6 +21,7 @@ pub struct ProcessingOptions {
     pub mirror: Option<MirrorOptions>,
     pub rotate: Option<RotateOptions>,
     pub blur: Option<BlurOptions>,
+    pub colors: Option<ColorsOptions>,
 }
 
 impl ProcessingOptions {

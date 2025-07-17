@@ -1,4 +1,5 @@
 pub mod blur;
+pub mod colors_effects;
 pub mod crop;
 pub mod format;
 pub mod io;

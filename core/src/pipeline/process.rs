@@ -2,6 +2,7 @@ use crate::ImagePipeline;
 
 impl ImagePipeline<'_> {
     pub fn process(&mut self) -> Result<(), anyhow::Error> {
+        self.colors()?;
         self.rotate()?;
         self.crop()?;
         self.blur()?;
