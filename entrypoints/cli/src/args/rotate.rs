@@ -3,7 +3,7 @@ use wiot_core::models::options::RotateOptions;
 
 #[derive(Args, Debug)]
 pub struct RotateArgs {
-    // Rorate image
+    // Rotate image
     #[arg(long, short)]
     pub rotate: Option<f32>,
 }
