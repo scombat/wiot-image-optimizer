@@ -9,6 +9,7 @@ async-trait = "0.1.88"
 bytemuck = "1.22.0"
 clap = { version = "4.5.40", features = ["derive"] }
 image = { version = "0.25.6", features = ["avif", "avif-native"] }
+imageproc = "0.25.0"
 once_cell = "1.21.3"
 regex = "1.11.1"
 sha2 = "0.10.9"

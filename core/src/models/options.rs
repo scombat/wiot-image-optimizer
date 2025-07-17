@@ -6,6 +6,7 @@ pub use super::gravity_options::GravityOptions;
 pub use super::mirror_options::MirrorOptions;
 pub use super::quality_options::QualityOptions;
 pub use super::resize_options::ResizeOptions;
+pub use super::rotate_options::RotateOptions;
 
 #[derive(Debug, Default, Clone)]
 pub struct ProcessingOptions {
@@ -16,6 +17,7 @@ pub struct ProcessingOptions {
     pub crop: Option<CropOptions>,
     pub gravity: Option<GravityOptions>,
     pub mirror: Option<MirrorOptions>,
+    pub rotate: Option<RotateOptions>,
 }
 
 impl ProcessingOptions {
