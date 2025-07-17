@@ -116,6 +116,7 @@ mod tests {
             auto_select_format: false,
             crop: None,
             mirror: None,
+            blur: None,
         };
     }
 
