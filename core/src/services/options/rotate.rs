@@ -9,7 +9,7 @@ impl ImagePipeline<'_> {
                 let image = self
                     .image
                     .as_mut()
-                    .ok_or_else(|| anyhow::anyhow!("[core/mirror] Image cannot be loaded"))?;
+                    .ok_or_else(|| anyhow::anyhow!("[core/rotate] Image cannot be loaded"))?;
 
                 let new_img = image.to_rgba8();
 
