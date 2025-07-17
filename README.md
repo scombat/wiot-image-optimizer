@@ -64,8 +64,8 @@ The CLI currently supports:
 | ├─ Width / Height                       | ✅     | ✅     | ❌     | ❌        |
 | ├─ Gravity (position)                   | ✅     | ✅     | ❌     | ❌        |
 | └─  AI Object gravity selection         | 🔜     | ❌     | ❌     | ❌        |
-| Flip (horizontal/vertical)              | 🔜      | ❌     | ❌     | ❌        |
-| Rotate                                  | 🔜      | ❌     | ❌     | ❌        |
+| Flip (horizontal/vertical)              | ✅      | ✅     | ❌     | ❌        |
+| Rotate                                  | ✅      | ✅     | ❌     | ❌        |
 | Blur                                    | 🔜      | ❌     | ❌     | ❌        |
 | Grayscale / Color Effects               | 🔜      | ❌     | ❌     | ❌        |
 | Sharpen                                 | 🔜      | ❌     | ❌     | ❌        |
