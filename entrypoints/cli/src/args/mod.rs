@@ -1,3 +1,4 @@
+pub mod blur;
 pub mod crop;
 pub mod format;
 pub mod io;

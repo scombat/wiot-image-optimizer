@@ -66,7 +66,7 @@ The CLI currently supports:
 | └─  AI Object gravity selection         | 🔜     | ❌     | ❌     | ❌        |
 | Flip (horizontal/vertical)              | ✅      | ✅     | ❌     | ❌        |
 | Rotate                                  | ✅      | ✅     | ❌     | ❌        |
-| Blur                                    | 🔜      | ❌     | ❌     | ❌        |
+| Blur                                    | ✅      | ✅     | ❌     | ❌        |
 | Grayscale / Color Effects               | 🔜      | ❌     | ❌     | ❌        |
 | Sharpen                                 | 🔜      | ❌     | ❌     | ❌        |
 | Watermark / Overlay                     | 🔜      | ❌     | ❌     | ❌        |
