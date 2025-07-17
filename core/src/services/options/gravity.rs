@@ -78,6 +78,7 @@ mod tests {
             format: None,
             auto_select_format: false,
             crop: None,
+            mirror: None,
         };
     }
 
