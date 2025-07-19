@@ -67,13 +67,13 @@ The CLI currently supports:
 | Flip (horizontal/vertical)              | ✅      | ✅     | ❌     | ❌        |
 | Rotate                                  | ✅      | ✅     | ❌     | ❌        |
 | Blur                                    | ✅      | ✅     | ❌     | ❌        |
-| Color Effects                           | ✅      | ✅     | ❌     | ❌        |
+| Image adjustments / Color Effects       | ✅      | ✅     | ❌     | ❌        |
 | ├─ Grayscale                            | ✅     | ✅     | ❌     | ❌        |
 | ├─ Brightness                           | ✅     | ✅     | ❌     | ❌        |
 | ├─ Contrast                             | ✅     | ✅     | ❌     | ❌        |
 | ├─ Gamme                                | ✅     | ✅     | ❌     | ❌        |
+| ├─ Sharpen                              | ✅     | ✅     | ❌     | ❌        |
 | └─  Invert                              | ✅     | ✅     | ❌     | ❌        |
-| Sharpen                                 | 🔜      | ❌     | ❌     | ❌        |
 | Watermark / Overlay                     | 🔜      | ❌     | ❌     | ❌        |
 | Metadata Handling                       | 🔜      | ❌     | ❌     | ❌        |
 
