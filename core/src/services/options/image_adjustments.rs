@@ -1,6 +1,6 @@
 use crate::ImagePipeline;
-use image::{DynamicImage, GenericImageView};
-use image::{GenericImage, Pixel, Rgba};
+use image::DynamicImage;
+use rayon::prelude::*;
 
 impl ImagePipeline<'_> {
     pub fn image_adjustments(&mut self) -> Result<(), anyhow::Error> {
@@ -44,25 +44,29 @@ fn apply_gamma(image: &mut DynamicImage, gamma: f32) {
     let mut lut = [0u8; 256];
     let inv_gamma = 1.0 / gamma;
     #[allow(clippy::needless_range_loop)]
-    for i in 0..256 {
+    lut.iter_mut().enumerate().for_each(|(i, lut_value)| {
         let normalized = (i as f32 / 255.0).powf(inv_gamma);
-        lut[i] = (normalized * 255.0).clamp(0.0, 255.0) as u8;
-    }
+        *lut_value = (normalized * 255.0).clamp(0.0, 255.0) as u8;
+    });
 
     let w = image.width();
     let h = image.height();
 
     let mut out = DynamicImage::new_rgba8(w, h);
-    for (x, y, pixel) in image.pixels() {
-        let channels = pixel.to_rgba().0;
-        let corrected = Rgba([
-            lut[channels[0] as usize],
-            lut[channels[1] as usize],
-            lut[channels[2] as usize],
-            channels[3],
-        ]);
-        out.put_pixel(x, y, corrected);
-    }
+    let mut out_buf = out.to_rgba8();
+    let in_buf = image.to_rgba8();
+
+    out_buf
+        .par_chunks_mut(4)
+        .zip(in_buf.par_chunks(4))
+        .for_each(|(out_px, in_px)| {
+            out_px[0] = lut[in_px[0] as usize];
+            out_px[1] = lut[in_px[1] as usize];
+            out_px[2] = lut[in_px[2] as usize];
+            out_px[3] = in_px[3];
+        });
+
+    out = DynamicImage::ImageRgba8(out_buf);
 
     *image = out
 }
