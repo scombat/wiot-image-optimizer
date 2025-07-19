@@ -4,6 +4,7 @@ pub use super::blur_options::BlurOptions;
 pub use super::crop_options::CropOptions;
 pub use super::format_options::FormatOptions;
 pub use super::gravity_options::GravityOptions;
+pub use super::image_adjustments_options::ImageAdjustmentsOptions;
 pub use super::mirror_options::MirrorOptions;
 pub use super::quality_options::QualityOptions;
 pub use super::resize_options::ResizeOptions;
@@ -20,6 +21,7 @@ pub struct ProcessingOptions {
     pub mirror: Option<MirrorOptions>,
     pub rotate: Option<RotateOptions>,
     pub blur: Option<BlurOptions>,
+    pub image_adjustments: Option<ImageAdjustmentsOptions>,
 }
 
 impl ProcessingOptions {
