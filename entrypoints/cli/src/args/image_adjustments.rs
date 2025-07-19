@@ -30,6 +30,15 @@ pub struct ImageAdjustmentsArgs {
 
 impl ImageAdjustmentsArgs {
     pub fn get(&self) -> Option<ImageAdjustmentsOptions> {
+        if !self.grayscale
+            && self.brightness.is_none()
+            && self.contrast.is_none()
+            && self.gamma.is_none()
+            && !self.invert
+            && self.sharpen.get().is_none()
+        {
+            return None;
+        }
         Some(ImageAdjustmentsOptions {
             grayscale: self.grayscale,
             brightness: self.brightness,
