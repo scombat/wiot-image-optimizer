@@ -4,34 +4,36 @@ use image::{GenericImage, Pixel, Rgba};
 
 impl ImagePipeline<'_> {
     pub fn image_adjustments(&mut self) -> Result<(), anyhow::Error> {
-        let opts = self.options.image_adjustments.clone().unwrap();
-        let image = self
-            .image
-            .as_mut()
-            .ok_or_else(|| anyhow::anyhow!("[core/image_adjustments] Image cannot be loaded"))?;
+        if let Some(opts) = &self.options.image_adjustments {
+            if opts.is_enabled() {
+                let image = self.image.as_mut().ok_or_else(|| {
+                    anyhow::anyhow!("[core/image_adjustments] Image cannot be loaded")
+                })?;
 
-        if opts.grayscale {
-            *image = image.grayscale();
-        }
+                if opts.grayscale {
+                    *image = image.grayscale();
+                }
 
-        if let Some(b) = opts.brightness {
-            *image = image.brighten(b);
-        }
+                if let Some(b) = opts.brightness {
+                    *image = image.brighten(b);
+                }
 
-        if let Some(c) = opts.contrast {
-            *image = image.adjust_contrast(c);
-        }
+                if let Some(c) = opts.contrast {
+                    *image = image.adjust_contrast(c);
+                }
 
-        if let Some(g) = opts.gamma {
-            apply_gamma(image, g);
-        }
+                if let Some(g) = opts.gamma {
+                    apply_gamma(image, g);
+                }
 
-        if opts.invert {
-            image.invert();
-        }
+                if opts.invert {
+                    image.invert();
+                }
 
-        if let Some(s) = opts.sharpen {
-            *image = image.unsharpen(s.sigma, s.threshold);
+                if let Some(s) = &opts.sharpen {
+                    *image = image.unsharpen(s.sigma, s.threshold);
+                }
+            }
         }
 
         Ok(())
