@@ -31,7 +31,6 @@ impl ImagePipeline<'_> {
         }
 
         if let Some(s) = opts.sharpen {
-            dbg!("Sharpen start");
             *image = image.unsharpen(s.sigma, s.threshold);
         }
 
