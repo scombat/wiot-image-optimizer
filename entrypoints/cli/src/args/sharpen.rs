@@ -11,7 +11,7 @@ use wiot_core::models::image_adjustments_options::Sharpen;
     )
 )]
 pub struct SharpenArgs {
-    /// Amount to blur the image by before inverting (unsharp mask)
+    /// Amount to blur the image by for unsharp mask (larger values = more sharpening)
     #[clap(long, help_heading = "SHARPEN OPTIONS")]
     pub sharpen_sigma: Option<f32>,
 
