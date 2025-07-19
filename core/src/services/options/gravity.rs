@@ -80,7 +80,7 @@ mod tests {
             crop: None,
             rotate: None,
             mirror: None,
-            colors: None,
+            image_adjustments: None,
             blur: None,
         };
     }

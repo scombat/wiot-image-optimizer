@@ -110,7 +110,7 @@ mod tests {
                 ..Default::default()
             }),
             quality: None,
-            colors: None,
+            image_adjustments: None,
             gravity: None,
             rotate: None,
             format: None,

@@ -3,12 +3,12 @@ use image::{DynamicImage, GenericImageView};
 use image::{GenericImage, Pixel, Rgba};
 
 impl ImagePipeline<'_> {
-    pub fn colors(&mut self) -> Result<(), anyhow::Error> {
-        let opts = self.options.colors.clone().unwrap();
+    pub fn image_adjustments(&mut self) -> Result<(), anyhow::Error> {
+        let opts = self.options.image_adjustments.clone().unwrap();
         let image = self
             .image
             .as_mut()
-            .ok_or_else(|| anyhow::anyhow!("[core/colors] Image cannot be loaded"))?;
+            .ok_or_else(|| anyhow::anyhow!("[core/image_adjustments] Image cannot be loaded"))?;
 
         if opts.grayscale {
             *image = image.grayscale();
@@ -28,6 +28,11 @@ impl ImagePipeline<'_> {
 
         if opts.invert {
             image.invert();
+        }
+
+        if let Some(s) = opts.sharpen {
+            dbg!("Sharpen start");
+            *image = image.unsharpen(s.sigma, s.threshold);
         }
 
         Ok(())

@@ -1,8 +1,9 @@
+use super::sharpen::SharpenArgs;
 use clap::Args;
-use wiot_core::models::options::ColorsOptions;
+use wiot_core::models::options::ImageAdjustmentsOptions;
 
 #[derive(Args, Debug)]
-pub struct ColorsEffectsArgs {
+pub struct ImageAdjustmentsArgs {
     /// Convert image to grayscale
     #[arg(long)]
     pub grayscale: bool,
@@ -22,16 +23,20 @@ pub struct ColorsEffectsArgs {
     /// Invert colors (negative effect)
     #[arg(long)]
     pub invert: bool,
+
+    #[command(flatten)]
+    pub sharpen: SharpenArgs,
 }
 
-impl ColorsEffectsArgs {
-    pub fn get(&self) -> Option<ColorsOptions> {
-        Some(ColorsOptions {
+impl ImageAdjustmentsArgs {
+    pub fn get(&self) -> Option<ImageAdjustmentsOptions> {
+        Some(ImageAdjustmentsOptions {
             grayscale: self.grayscale,
             brightness: self.brightness,
             contrast: self.contrast,
             gamma: self.gamma,
             invert: self.invert,
+            sharpen: self.sharpen.get(),
         })
     }
 }
