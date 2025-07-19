@@ -71,7 +71,7 @@ The CLI currently supports:
 | ├─ Grayscale                            | ✅     | ✅     | ❌     | ❌        |
 | ├─ Brightness                           | ✅     | ✅     | ❌     | ❌        |
 | ├─ Contrast                             | ✅     | ✅     | ❌     | ❌        |
-| ├─ Gamme                                | ✅     | ✅     | ❌     | ❌        |
+| ├─ Gamma                                | ✅     | ✅     | ❌     | ❌        |
 | ├─ Sharpen                              | ✅     | ✅     | ❌     | ❌        |
 | └─  Invert                              | ✅     | ✅     | ❌     | ❌        |
 | Watermark / Overlay                     | 🔜      | ❌     | ❌     | ❌        |
