@@ -1,17 +1,21 @@
-use crate::local::LocalFileAdapter;
-use anyhow::{Result, bail};
 use std::sync::Arc;
+
+use anyhow::{Result, bail};
 use wiot_core::services::io::{FileAdapterFactory, FileDestination, FileSource};
+
+use crate::http::HttpFileAdapterFactory;
+use crate::local::LocalFileAdapter;
 
 pub struct AdapterResolver;
 
 impl AdapterResolver {
     // List of available adapters
-    const ADAPTERS: [&'static dyn FileAdapterFactory; 1] = [&LocalFileAdapter];
+    const ADAPTERS: [&'static dyn FileAdapterFactory; 2] =
+        [&LocalFileAdapter, &HttpFileAdapterFactory];
 
     pub fn resolve_source(source: &str) -> Result<Arc<dyn FileSource>> {
         for adapter in Self::ADAPTERS {
-            if adapter.can_handler(source) {
+            if adapter.can_handle(source) {
                 return adapter.create_source(source);
             }
         }
@@ -21,7 +25,7 @@ impl AdapterResolver {
 
     pub fn resolve_destination(destination: &str) -> Result<Arc<dyn FileDestination>> {
         for adapter in Self::ADAPTERS {
-            if adapter.can_handler(destination) {
+            if adapter.can_handle(destination) {
                 return adapter.create_destination(destination);
             }
         }

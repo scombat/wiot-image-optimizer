@@ -1,8 +1,9 @@
+use std::fs;
+use std::sync::Arc;
+
 use anyhow::Result;
 use async_trait::async_trait;
 use image::{DynamicImage, open};
-use std::fs;
-use std::sync::Arc;
 use tokio::task::spawn_blocking;
 use wiot_core::services::io::{FileAdapterFactory, FileDestination, FileSource};
 
@@ -45,13 +46,13 @@ impl FileDestination for LocalFileAdapter {
 }
 
 impl FileAdapterFactory for LocalFileAdapter {
-    fn can_handler(&self, uri: &str) -> bool {
+    fn can_handle(&self, uri: &str) -> bool {
         // Accept any path that doesn't have a scheme or has file:// scheme
         !uri.contains("://") || uri.starts_with("file://")
     }
 
     fn create_source(&self, uri: &str) -> Result<Arc<dyn FileSource>> {
-        if !self.can_handler(uri) {
+        if !self.can_handle(uri) {
             return Err(anyhow::anyhow!(
                 "[LocalFileAdapter] Cannot handle URI scheme: {}",
                 uri
@@ -61,7 +62,7 @@ impl FileAdapterFactory for LocalFileAdapter {
     }
 
     fn create_destination(&self, uri: &str) -> Result<Arc<dyn FileDestination>> {
-        if !self.can_handler(uri) {
+        if !self.can_handle(uri) {
             return Err(anyhow::anyhow!(
                 "[LocalFileAdapter] Cannot handle URI scheme: {}",
                 uri
@@ -117,10 +118,7 @@ mod tests {
             ];
 
             for uri in uris {
-                assert!(
-                    adapter.can_handler(uri),
-                    "Adapter should handle file scheme"
-                );
+                assert!(adapter.can_handle(uri), "Adapter should handle file scheme");
                 assert!(
                     adapter.create_source(uri).is_ok(),
                     "Source should be created"
@@ -181,7 +179,7 @@ mod tests {
             let adapter = LocalFileAdapter;
             for uri in uris {
                 assert!(
-                    !adapter.can_handler(uri),
+                    !adapter.can_handle(uri),
                     "Adapter should not handle non-file scheme"
                 );
                 assert!(
