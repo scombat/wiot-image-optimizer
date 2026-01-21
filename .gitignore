@@ -298,3 +298,14 @@ $RECYCLE.BIN/
 # Added by cargo
 
 /target
+
+### AI Coding Assistants ###
+# OpenCode
+.opencode/
+
+# Claude/Anthropic
+CLAUDE.md
+**/CLAUDE.md
+
+# Agent instructions
+AGENTS.md
