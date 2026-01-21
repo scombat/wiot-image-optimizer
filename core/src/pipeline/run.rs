@@ -31,13 +31,20 @@ impl ImagePipeline<'_> {
     }
 
     pub async fn encode(&mut self) -> Result<(), anyhow::Error> {
-        let image = self
-            .image
-            .as_ref()
-            .ok_or_else(|| anyhow::anyhow!("No image loaded"))?;
         let encoder = self.resolve_encoder()?;
-        let encoded = encoder.encode(image, &self.options)?;
-        self.encoded_bytes = Some(encoded.clone());
+
+        // Flatten alpha if encoder doesn't support transparency and image has alpha
+        let image = if !encoder.supports_transparency() && self.image_has_alpha() {
+            self.flatten_alpha()?
+        } else {
+            self.image
+                .as_ref()
+                .ok_or_else(|| anyhow::anyhow!("No image loaded"))?
+                .clone()
+        };
+
+        let encoded = encoder.encode(&image, &self.options)?;
+        self.encoded_bytes = Some(encoded);
 
         Ok(())
     }

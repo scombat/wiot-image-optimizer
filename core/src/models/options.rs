@@ -1,5 +1,6 @@
 use image::ImageFormat;
 
+pub use super::background_options::BackgroundOptions;
 pub use super::blur_options::BlurOptions;
 pub use super::crop_options::CropOptions;
 pub use super::format_options::FormatOptions;
@@ -16,11 +17,12 @@ pub struct ProcessingOptions {
     pub quality: Option<QualityOptions>,
     pub resize: Option<ResizeOptions>,
     pub auto_select_format: bool,
+    pub background: Option<BackgroundOptions>,
+    pub blur: Option<BlurOptions>,
     pub crop: Option<CropOptions>,
     pub gravity: Option<GravityOptions>,
     pub mirror: Option<MirrorOptions>,
     pub rotate: Option<RotateOptions>,
-    pub blur: Option<BlurOptions>,
     pub image_adjustments: Option<ImageAdjustmentsOptions>,
 }
 

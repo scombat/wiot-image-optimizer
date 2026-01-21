@@ -19,6 +19,12 @@ pub trait ImageEncoder: Send + Sync {
     fn extension(&self) -> &'static str;
     fn mime_type(&self) -> &'static str;
     fn supports_native_quality_encoding(&self) -> bool;
+
+    /// Returns true if this encoder supports transparency (alpha channel).
+    /// Default implementation returns true. Encoders like JPEG should override to return false.
+    fn supports_transparency(&self) -> bool {
+        true
+    }
 }
 
 pub fn encoder<E: ImageEncoder + 'static>(encoder: E) -> Arc<dyn ImageEncoder> {
