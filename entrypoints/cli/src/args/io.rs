@@ -1,8 +1,9 @@
 use std::sync::Arc;
 
-use adapters::resolver::AdapterResolver;
 use clap::Args;
 use wiot_core::services::io::{FileDestination, FileSource};
+
+use adapters::resolver::AdapterResolver;
 
 #[derive(Args, Debug)]
 pub struct IoArgs {

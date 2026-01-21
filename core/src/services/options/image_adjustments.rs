@@ -1,6 +1,7 @@
-use crate::ImagePipeline;
 use image::DynamicImage;
 use rayon::prelude::*;
+
+use crate::ImagePipeline;
 
 impl ImagePipeline<'_> {
     pub fn image_adjustments(&mut self) -> Result<(), anyhow::Error> {

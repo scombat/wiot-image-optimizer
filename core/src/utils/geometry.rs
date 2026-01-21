@@ -1,8 +1,8 @@
-use crate::{
-    models::gravity_options::GravityOptions, models::options::CropOptions,
-    utils::coordinates::Coord,
-};
 use image::{DynamicImage, GenericImageView};
+
+use crate::models::gravity_options::GravityOptions;
+use crate::models::options::CropOptions;
+use crate::utils::coordinates::Coord;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Area {

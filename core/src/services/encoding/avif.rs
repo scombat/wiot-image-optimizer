@@ -1,11 +1,13 @@
-use crate::services::encoding::image_encoder::{encode_to_vec, extract_quality};
-use crate::{models::options::ProcessingOptions, services::encoding::image_encoder::ImageEncoder};
-use anyhow::Result;
-use image::ImageEncoder as _;
-use image::{DynamicImage, ImageFormat, codecs::avif::AvifEncoder as InnerAvifEncoder};
 use std::cmp::max;
 use std::io::Write;
 use std::thread::available_parallelism;
+
+use anyhow::Result;
+use image::ImageEncoder as _;
+use image::{DynamicImage, ImageFormat, codecs::avif::AvifEncoder as InnerAvifEncoder};
+
+use crate::models::options::ProcessingOptions;
+use crate::services::encoding::image_encoder::{ImageEncoder, encode_to_vec, extract_quality};
 
 pub struct AvifEncoder;
 

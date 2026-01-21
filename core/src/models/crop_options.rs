@@ -1,5 +1,6 @@
-use crate::utils::coordinates::Coord;
 use anyhow::Error;
+
+use crate::utils::coordinates::Coord;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct CropOptions {

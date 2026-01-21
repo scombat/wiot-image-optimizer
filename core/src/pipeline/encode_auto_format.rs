@@ -1,12 +1,11 @@
-use sha2::{Digest, Sha256};
 use std::path::{MAIN_SEPARATOR, Path};
 use std::sync::{Arc, Mutex};
+
+use sha2::{Digest, Sha256};
 use tokio::task::{JoinHandle, spawn_blocking};
 
-use crate::{
-    ImagePipeline,
-    utils::auto_format::{DEFAULT_AUTO_FORMATS, FormatInfo},
-};
+use crate::ImagePipeline;
+use crate::utils::auto_format::{DEFAULT_AUTO_FORMATS, FormatInfo};
 
 type EncodedHandle = (
     JoinHandle<Result<(), anyhow::Error>>,

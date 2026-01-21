@@ -1,6 +1,7 @@
 use image::{DynamicImage, RgbaImage, imageops::overlay};
 
-use crate::{ImagePipeline, models::resize_options::AspectRatioStrategy};
+use crate::ImagePipeline;
+use crate::models::resize_options::AspectRatioStrategy;
 
 impl ImagePipeline<'_> {
     pub fn resize(&mut self) -> Result<(), anyhow::Error> {
@@ -115,6 +116,7 @@ mod tests {
             rotate: None,
             format: None,
             auto_select_format: false,
+            background: None,
             crop: None,
             mirror: None,
             blur: None,

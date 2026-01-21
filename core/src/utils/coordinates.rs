@@ -1,5 +1,6 @@
-use anyhow::Error;
 use std::str::FromStr;
+
+use anyhow::Error;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Coord {

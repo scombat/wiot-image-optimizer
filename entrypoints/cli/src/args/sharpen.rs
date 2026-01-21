@@ -1,4 +1,5 @@
 use clap::{ArgGroup, Args};
+
 use wiot_core::models::image_adjustments_options::Sharpen;
 
 #[derive(Args, Debug)]

@@ -1,8 +1,10 @@
+use std::sync::Arc;
+
+use image::{DynamicImage, ImageFormat};
+
 use crate::ImagePipeline;
 use crate::services::encoding::image_encoder::ImageEncoder;
 use crate::utils::format::infer_format_from_path;
-use image::{DynamicImage, ImageFormat};
-use std::sync::Arc;
 
 impl ImagePipeline<'_> {
     /*
