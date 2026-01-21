@@ -1,7 +1,9 @@
-use crate::services::encoding::image_encoder::ImageEncoder;
-use image::ImageFormat;
 use std::collections::HashMap;
 use std::sync::Arc;
+
+use image::ImageFormat;
+
+use crate::services::encoding::image_encoder::ImageEncoder;
 
 pub struct CodecResolver {
     encoders: HashMap<ImageFormat, Arc<dyn ImageEncoder>>,
@@ -31,12 +33,14 @@ impl Default for CodecResolver {
     fn default() -> Self {
         let mut resolver = CodecResolver::new();
         use crate::services::encoding::{
-            avif::AvifEncoder, jpeg::JpegEncoder, png::PngEncoder, webp::WebPEncoder,
+            avif::AvifEncoder, gif::GifEncoder, jpeg::JpegEncoder, png::PngEncoder,
+            webp::WebPEncoder,
         };
         resolver.register_encoder(ImageFormat::Jpeg, Arc::new(JpegEncoder));
         resolver.register_encoder(ImageFormat::Png, Arc::new(PngEncoder));
         resolver.register_encoder(ImageFormat::WebP, Arc::new(WebPEncoder));
         resolver.register_encoder(ImageFormat::Avif, Arc::new(AvifEncoder));
+        resolver.register_encoder(ImageFormat::Gif, Arc::new(GifEncoder));
 
         resolver
     }

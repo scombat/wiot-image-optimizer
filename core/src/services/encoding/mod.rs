@@ -1,5 +1,6 @@
 pub mod avif;
 pub mod codec_resolver;
+pub mod gif;
 pub mod image_encoder;
 pub mod jpeg;
 pub mod png;

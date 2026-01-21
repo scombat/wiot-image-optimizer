@@ -38,6 +38,7 @@ impl FormatOptions {
             ImageFormat::Avif,
             ImageFormat::Jpeg,
             ImageFormat::Png,
+            ImageFormat::Gif,
         ]
     }
 
@@ -59,6 +60,11 @@ mod tests {
     #[test]
     fn test_format_validation() {
         assert!(FormatOptions::new(Some(ImageFormat::Jpeg)).is_ok());
+    }
+
+    #[test]
+    fn test_gif_format_is_supported() {
+        assert!(FormatOptions::new(Some(ImageFormat::Gif)).is_ok());
     }
 
     #[test]
