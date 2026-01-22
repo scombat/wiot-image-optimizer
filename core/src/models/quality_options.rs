@@ -24,6 +24,7 @@ impl QualityOptions {
         self.quality.is_some()
     }
 
+    #[allow(clippy::collapsible_if)]
     pub fn validate(&self) -> Result<(), anyhow::Error> {
         if let Some(quality) = self.quality {
             if quality > 100.0 {

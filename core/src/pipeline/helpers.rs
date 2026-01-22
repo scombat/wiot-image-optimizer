@@ -22,6 +22,7 @@ impl ImagePipeline<'_> {
             .unwrap_or(ImageFormat::Jpeg)
     }
 
+    #[allow(clippy::collapsible_if)]
     pub fn resolve_encoder(&self) -> Result<&Arc<dyn ImageEncoder>, anyhow::Error> {
         let target_format = self.target_format();
 

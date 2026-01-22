@@ -32,6 +32,7 @@ impl CropOptions {
             || self.height.is_some()
     }
 
+    #[allow(clippy::collapsible_if)]
     pub fn validate(&self) -> Result<(), Error> {
         // Validate x and y: if present, must be valid Coord (already parsed)
         // Validate offset_x and offset_y: if present, must be percent between -100% and +100% or any px

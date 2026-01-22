@@ -4,6 +4,7 @@ use rayon::prelude::*;
 use crate::ImagePipeline;
 
 impl ImagePipeline<'_> {
+    #[allow(clippy::collapsible_if)]
     pub fn image_adjustments(&mut self) -> Result<(), anyhow::Error> {
         if let Some(opts) = &self.options.image_adjustments {
             if opts.is_enabled() {
