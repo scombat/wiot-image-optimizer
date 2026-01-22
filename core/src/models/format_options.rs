@@ -17,6 +17,7 @@ impl FormatOptions {
         self.format.is_some()
     }
 
+    #[allow(clippy::collapsible_if)]
     pub fn validate(&self) -> Result<(), anyhow::Error> {
         if let Some(format) = self.format {
             if !Self::supported_formats().contains(&format) {
@@ -38,6 +39,7 @@ impl FormatOptions {
             ImageFormat::Avif,
             ImageFormat::Jpeg,
             ImageFormat::Png,
+            ImageFormat::Gif,
         ]
     }
 
@@ -59,6 +61,11 @@ mod tests {
     #[test]
     fn test_format_validation() {
         assert!(FormatOptions::new(Some(ImageFormat::Jpeg)).is_ok());
+    }
+
+    #[test]
+    fn test_gif_format_is_supported() {
+        assert!(FormatOptions::new(Some(ImageFormat::Gif)).is_ok());
     }
 
     #[test]

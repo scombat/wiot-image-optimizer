@@ -2,6 +2,7 @@ use crate::models::options::GravityOptions;
 use crate::{ImagePipeline, utils::geometry::Geometry};
 
 impl ImagePipeline<'_> {
+    #[allow(clippy::collapsible_if)]
     pub fn crop(&mut self) -> Result<(), anyhow::Error> {
         let gravity = self.options.gravity.unwrap_or(GravityOptions::TopLeft);
         if let Some(ref options) = self.options.crop {

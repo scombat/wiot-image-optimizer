@@ -1,7 +1,10 @@
-use crate::{models::options::ProcessingOptions, services::encoding::image_encoder::ImageEncoder};
+use std::io::{Cursor, Write};
+
 use anyhow::Result;
 use image::{DynamicImage, ImageFormat, codecs::jpeg::JpegEncoder as InnerJpegEncoder};
-use std::io::{Cursor, Write};
+
+use crate::models::options::ProcessingOptions;
+use crate::services::encoding::image_encoder::ImageEncoder;
 
 pub struct JpegEncoder;
 
@@ -46,6 +49,10 @@ impl ImageEncoder for JpegEncoder {
 
     fn supports_native_quality_encoding(&self) -> bool {
         true
+    }
+
+    fn supports_transparency(&self) -> bool {
+        false
     }
 }
 

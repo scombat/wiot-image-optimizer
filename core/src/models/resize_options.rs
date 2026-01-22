@@ -64,6 +64,7 @@ impl ResizeOptions {
      * - width and height can both be None or both be > 0
      * - DPR must be between 0.1 and 10.0 (default = 1.0)
      */
+    #[allow(clippy::collapsible_if)]
     pub fn validate(&self) -> Result<(), anyhow::Error> {
         if let Some(width) = self.width {
             if width == 0 {

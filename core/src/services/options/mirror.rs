@@ -1,6 +1,7 @@
 use crate::ImagePipeline;
 
 impl ImagePipeline<'_> {
+    #[allow(clippy::collapsible_if)]
     pub fn mirror(&mut self) -> Result<(), anyhow::Error> {
         if let Some(ref options) = self.options.mirror {
             if options.is_enabled() {

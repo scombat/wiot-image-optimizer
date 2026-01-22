@@ -1,7 +1,7 @@
-use crate::ImagePipeline;
-
 use anyhow::Result;
 use image::ImageFormat;
+
+use crate::ImagePipeline;
 
 impl ImagePipeline<'_> {
     pub fn optimize_quality(&mut self) -> Result<(), anyhow::Error> {

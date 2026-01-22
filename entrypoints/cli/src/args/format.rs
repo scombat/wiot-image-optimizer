@@ -2,7 +2,7 @@ use clap::Args;
 
 #[derive(Args, Debug)]
 pub struct FormatArgs {
-    /// Output image format (jpeg, png, webp, avif)
+    /// Output image format (jpeg, png, webp, avif, gif)
     ///
     /// If not specified, the format will be inferred from the output file extension,
     /// unless --auto-format is enabled.

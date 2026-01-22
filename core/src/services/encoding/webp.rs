@@ -1,12 +1,11 @@
 use std::io::Write;
 
-use crate::services::encoding::image_encoder::{ImageEncoder, encode_to_vec};
-use crate::{
-    models::options::ProcessingOptions, services::encoding::image_encoder::extract_quality,
-};
 use anyhow::Result;
 use image::{DynamicImage, ImageFormat};
 use webp::Encoder as InnerWebPEncoder;
+
+use crate::models::options::ProcessingOptions;
+use crate::services::encoding::image_encoder::{ImageEncoder, encode_to_vec, extract_quality};
 
 pub struct WebPEncoder;
 

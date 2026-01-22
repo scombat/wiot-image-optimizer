@@ -77,6 +77,7 @@ mod tests {
             quality: None,
             format: None,
             auto_select_format: false,
+            background: None,
             crop: None,
             rotate: None,
             mirror: None,

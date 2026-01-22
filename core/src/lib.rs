@@ -1,15 +1,15 @@
+use std::sync::Arc;
+
+use image::DynamicImage;
+
+use models::options::ProcessingOptions;
+use services::encoding::codec_resolver::CodecResolver;
+use services::io::{FileDestination, FileSource};
+
 pub mod models;
 mod pipeline;
 pub mod services;
 pub mod utils;
-
-use image::DynamicImage;
-use models::options::ProcessingOptions;
-use services::{
-    encoding::codec_resolver::CodecResolver,
-    io::{FileDestination, FileSource},
-};
-use std::sync::Arc;
 
 pub struct ImagePipeline<'a> {
     source: Arc<dyn FileSource>,

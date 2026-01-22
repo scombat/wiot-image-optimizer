@@ -1,8 +1,10 @@
 use image::{DynamicImage, RgbaImage, imageops::overlay};
 
-use crate::{ImagePipeline, models::resize_options::AspectRatioStrategy};
+use crate::ImagePipeline;
+use crate::models::resize_options::AspectRatioStrategy;
 
 impl ImagePipeline<'_> {
+    #[allow(clippy::collapsible_if)]
     pub fn resize(&mut self) -> Result<(), anyhow::Error> {
         if let Some(ref resize_options) = self.options.resize {
             if resize_options.is_enabled() {
@@ -115,6 +117,7 @@ mod tests {
             rotate: None,
             format: None,
             auto_select_format: false,
+            background: None,
             crop: None,
             mirror: None,
             blur: None,

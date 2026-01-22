@@ -10,6 +10,7 @@ impl BlurOptions {
         self.blur.is_some()
     }
 
+    #[allow(clippy::collapsible_if)]
     pub fn validate(&self) -> Result<(), anyhow::Error> {
         if let Some(blur) = self.blur {
             if blur <= 0.0 {

@@ -1,12 +1,14 @@
 use anyhow::Result;
 use clap::Parser;
+use wiot_core::models::options::GravityOptions;
 use wiot_core::{ImagePipeline, models::options::ProcessingOptions};
+
 mod args;
 use crate::args::{
-    blur::BlurArgs, crop::CropArgs, format::FormatArgs, image_adjustments::ImageAdjustmentsArgs,
-    io::IoArgs, mirror::MirrorArgs, quality::QualityArgs, resize::ResizeArgs, rotate::RotateArgs,
+    background::BackgroundArgs, blur::BlurArgs, crop::CropArgs, format::FormatArgs,
+    image_adjustments::ImageAdjustmentsArgs, io::IoArgs, mirror::MirrorArgs, quality::QualityArgs,
+    resize::ResizeArgs, rotate::RotateArgs,
 };
-use wiot_core::models::options::GravityOptions;
 
 #[derive(Parser, Debug)]
 #[command(name = "wiot-cli")]
@@ -37,6 +39,9 @@ struct CliArgs {
     pub rotate: RotateArgs,
 
     #[command(flatten)]
+    pub background: BackgroundArgs,
+
+    #[command(flatten)]
     pub blur: BlurArgs,
 
     #[command(flatten)]
@@ -60,6 +65,7 @@ async fn main() -> Result<()> {
         mirror: args.mirror.get(),
         rotate: args.rotate.get(),
         blur: args.blur.get(),
+        background: args.background.get(),
         image_adjustments: args.image_adjustments.get(),
         ..Default::default()
     };

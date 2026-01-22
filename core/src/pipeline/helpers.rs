@@ -1,8 +1,10 @@
+use std::sync::Arc;
+
+use image::{DynamicImage, ImageFormat};
+
 use crate::ImagePipeline;
 use crate::services::encoding::image_encoder::ImageEncoder;
 use crate::utils::format::infer_format_from_path;
-use image::{DynamicImage, ImageFormat};
-use std::sync::Arc;
 
 impl ImagePipeline<'_> {
     /*
@@ -20,6 +22,7 @@ impl ImagePipeline<'_> {
             .unwrap_or(ImageFormat::Jpeg)
     }
 
+    #[allow(clippy::collapsible_if)]
     pub fn resolve_encoder(&self) -> Result<&Arc<dyn ImageEncoder>, anyhow::Error> {
         let target_format = self.target_format();
 

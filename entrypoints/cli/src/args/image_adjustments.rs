@@ -1,6 +1,7 @@
-use super::sharpen::SharpenArgs;
 use clap::Args;
 use wiot_core::models::options::ImageAdjustmentsOptions;
+
+use super::sharpen::SharpenArgs;
 
 #[derive(Args, Debug)]
 pub struct ImageAdjustmentsArgs {

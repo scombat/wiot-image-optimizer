@@ -1,3 +1,4 @@
+pub mod background_options;
 pub mod blur_options;
 pub mod crop_options;
 pub mod format_options;
