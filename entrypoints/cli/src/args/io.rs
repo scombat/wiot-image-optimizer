@@ -24,7 +24,7 @@ impl IoArgs {
         }
     }
 
-    pub fn resolve_source(&self) -> Result<Arc<(dyn FileSource + 'static)>, anyhow::Error> {
+    pub fn resolve_source(&self) -> Result<Arc<dyn FileSource + 'static>, anyhow::Error> {
         AdapterResolver::resolve_source(&self.input)
     }
 
