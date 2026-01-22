@@ -3,6 +3,7 @@ use image::DynamicImage;
 use imageproc::geometric_transformations::{Interpolation, rotate_about_center};
 
 impl ImagePipeline<'_> {
+    #[allow(clippy::collapsible_if)]
     pub fn rotate(&mut self) -> Result<(), anyhow::Error> {
         if let Some(ref options) = self.options.rotate {
             if options.is_enabled() {

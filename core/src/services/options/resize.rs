@@ -4,6 +4,7 @@ use crate::ImagePipeline;
 use crate::models::resize_options::AspectRatioStrategy;
 
 impl ImagePipeline<'_> {
+    #[allow(clippy::collapsible_if)]
     pub fn resize(&mut self) -> Result<(), anyhow::Error> {
         if let Some(ref resize_options) = self.options.resize {
             if resize_options.is_enabled() {
