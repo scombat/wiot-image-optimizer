@@ -67,7 +67,7 @@ async fn main() -> Result<()> {
         blur: args.blur.get(),
         background: args.background.get(),
         image_adjustments: args.image_adjustments.get(),
-        ..Default::default()
+        format: args.format.get()?,
     };
 
     // Create a new ImagePipeline instance with options
