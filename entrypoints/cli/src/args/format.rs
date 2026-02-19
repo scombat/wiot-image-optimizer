@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use clap::Args;
 use image::ImageFormat;
 use wiot_core::models::options::FormatOptions;
@@ -122,10 +122,12 @@ mod tests {
         };
         let result = args.get();
         assert!(result.is_err());
-        assert!(result
-            .unwrap_err()
-            .to_string()
-            .contains("[cli/format] Unsupported format 'xyz'"));
+        assert!(
+            result
+                .unwrap_err()
+                .to_string()
+                .contains("[cli/format] Unsupported format 'xyz'")
+        );
     }
 
     #[test]
@@ -136,10 +138,12 @@ mod tests {
         };
         let result = args.get();
         assert!(result.is_err());
-        assert!(result
-            .unwrap_err()
-            .to_string()
-            .contains("Unsupported output format"));
+        assert!(
+            result
+                .unwrap_err()
+                .to_string()
+                .contains("Unsupported output format")
+        );
     }
 
     #[test]
