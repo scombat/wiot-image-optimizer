@@ -55,3 +55,90 @@ impl ImagePipeline<'_> {
             .ok_or_else(|| anyhow::anyhow!("[core/pipeline] Image not loaded"))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::any::Any;
+    use std::sync::Arc;
+
+    use anyhow::Result;
+    use async_trait::async_trait;
+    use image::{DynamicImage, ImageFormat};
+
+    use crate::ImagePipeline;
+    use crate::models::options::{FormatOptions, ProcessingOptions};
+    use crate::services::io::{FileDestination, FileSource};
+
+    struct MockSource;
+
+    #[async_trait]
+    impl FileSource for MockSource {
+        async fn read(&self, _path: &str) -> Result<DynamicImage> {
+            Ok(DynamicImage::new_rgb8(1, 1))
+        }
+        fn as_any(&self) -> &dyn Any {
+            self
+        }
+    }
+
+    struct MockDestination;
+
+    #[async_trait]
+    impl FileDestination for MockDestination {
+        async fn write(&self, _path: &str, _data: &[u8]) -> Result<()> {
+            Ok(())
+        }
+        fn as_any(&self) -> &dyn Any {
+            self
+        }
+    }
+
+    fn create_pipeline_with_format(
+        output: &str,
+        format: Option<FormatOptions>,
+    ) -> ImagePipeline<'static> {
+        let source = Arc::new(MockSource);
+        let destination = Arc::new(MockDestination);
+        let mut pipeline = ImagePipeline::new(source, destination, "input.jpg", output.to_string());
+        pipeline.options = ProcessingOptions {
+            format,
+            ..Default::default()
+        };
+        pipeline
+    }
+
+    #[test]
+    fn resolve_encoder_errors_on_format_extension_mismatch() {
+        let pipeline = create_pipeline_with_format(
+            "out.webp",
+            Some(FormatOptions::new(Some(ImageFormat::Png)).unwrap()),
+        );
+        let result = pipeline.resolve_encoder();
+        match result {
+            Err(e) => assert!(
+                e.to_string().contains("does not match"),
+                "Expected 'does not match' error, got: {}",
+                e
+            ),
+            Ok(_) => panic!("Expected error for format/extension mismatch"),
+        }
+    }
+
+    #[test]
+    fn resolve_encoder_succeeds_when_format_matches_extension() {
+        let pipeline = create_pipeline_with_format(
+            "out.webp",
+            Some(FormatOptions::new(Some(ImageFormat::WebP)).unwrap()),
+        );
+        let result = pipeline.resolve_encoder();
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn resolve_encoder_falls_back_to_extension_when_no_format() {
+        let pipeline = create_pipeline_with_format("out.png", None);
+        let result = pipeline.resolve_encoder();
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().format(), ImageFormat::Png);
+    }
+}
